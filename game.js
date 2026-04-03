@@ -13,7 +13,8 @@ class Game {
         this.ship = {
             x: 0, y: 0, vx: 0, vy: 0, rotation: 0, 
             fuel: 0, isThrusting: false, isRotatingLeft: false, isRotatingRight: false,
-            isExploded: false, isOnPlatform: true, explosionTriggered: false
+            isExploded: false, isOnPlatform: true, explosionTriggered: false,
+            cargo: null
         };
         
         this.resetTimeout = null;
@@ -139,12 +140,14 @@ class Game {
             vx: 0, vy: 0, rotation: 0,
             fuel: level.fuel * (1 / diff.fuelMult),
             isThrusting: false, isRotatingLeft: false, isRotatingRight: false,
-            isExploded: false, isOnPlatform: true, explosionTriggered: false
+            isExploded: false, isOnPlatform: true, explosionTriggered: false,
+            cargo: null
         };
         
         this.pod = {
             x: level.podStart.x, y: level.podStart.y,
-            vx: 0, vy: 0, isAttached: false
+            vx: 0, vy: 0, isAttached: false,
+            isCollected: false, type: level.podStart.type
         };
 
         this.particles = [];
@@ -183,7 +186,17 @@ class Game {
         
         this.physics.update(this.ship, this.pod, level.terrain, level.platforms);
         
-        // 3. Game condition checks
+        // 3. Cargo Collection Logic (on landing)
+        if (this.ship.isOnPlatform && !this.pod.isCollected && !this.ship.isExploded) {
+            const distToPod = Math.sqrt((this.ship.x - this.pod.x)**2 + (this.ship.y - this.pod.y)**2);
+            if (distToPod < 60) {
+                this.ship.cargo = this.pod.type;
+                this.pod.isCollected = true;
+                this.updateCargoHUD();
+            }
+        }
+
+        // 4. Game condition checks
         if (this.ship.fuel <= 0) this.ship.isThrusting = false;
         
         // Update HUD
@@ -194,10 +207,18 @@ class Game {
         
         // Success condition (at exit platform)
         const distToExit = Math.sqrt((this.ship.x - level.exit.x)**2 + (this.ship.y - level.exit.y)**2);
-        if (distToExit < level.exit.radius && this.pod.isAttached && this.ship.isOnPlatform) {
+        if (distToExit < level.exit.radius && this.ship.cargo && this.ship.isOnPlatform) {
             alert("MISSION COMPLETE!");
             this.currentLevelIndex = (this.currentLevelIndex + 1) % levels.length;
             this.startLevel();
+        }
+    }
+
+    updateCargoHUD() {
+        const textEl = document.getElementById('cargo-text');
+        if (textEl) {
+            textEl.innerText = this.ship.cargo ? `[ ${this.ship.cargo} ]` : '[ EMPTY ]';
+            textEl.style.color = this.ship.cargo ? '#39ff14' : '#fff'; // Green if loaded
         }
     }
 
@@ -261,12 +282,14 @@ class Game {
         this.ctx.stroke();
         this.ctx.setLineDash([]);
 
-        // 4. Draw Pod
-        this.ctx.shadowColor = '#ff00ff';
-        this.ctx.strokeStyle = '#ff00ff';
-        this.ctx.beginPath();
-        this.ctx.arc(this.pod.x, this.pod.y, 15, 0, Math.PI * 2);
-        this.ctx.stroke();
+        // 4. Draw Pod (if not collected)
+        if (!this.pod.isCollected) {
+            this.ctx.shadowColor = '#ff00ff';
+            this.ctx.strokeStyle = '#ff00ff';
+            this.ctx.beginPath();
+            this.ctx.arc(this.pod.x, this.pod.y, 15, 0, Math.PI * 2);
+            this.ctx.stroke();
+        }
 
         // 5. Draw Ship (if not exploded)
         if (!this.ship.isExploded) {

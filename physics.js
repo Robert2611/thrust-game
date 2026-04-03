@@ -51,11 +51,6 @@ class PhysicsEngine {
             ship.vy = 0;
             ship.rotation = 0; // Snap to upright
         }
-
-        // 7. Handle Pod and Tether (Optional Feature)
-        if (pod && pod.isAttached) {
-            this.handleTether(ship, pod);
-        }
     }
 
     checkAllCollisions(obj, terrain, platforms) {
@@ -114,32 +109,5 @@ class PhysicsEngine {
 
         const dist = Math.sqrt((closestX - cx) ** 2 + (closestY - cy) ** 2);
         return dist < radius;
-    }
-
-    handleTether(ship, pod) {
-        // Distance between ship and pod
-        const dx = ship.x - pod.x;
-        const dy = ship.y - pod.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const tetherLength = 50;
-        const stiffness = 0.05;
-
-        // Simple spring constraint
-        if (dist > tetherLength) {
-            const forceX = (dx / dist) * (dist - tetherLength) * stiffness;
-            const forceY = (dy / dist) * (dist - tetherLength) * stiffness;
-
-            ship.vx -= forceX;
-            ship.vy -= forceY;
-            pod.vx += forceX;
-            pod.vy += forceY;
-        }
-
-        // Pod physics
-        pod.vy += this.gravity;
-        pod.x += pod.vx;
-        pod.y += pod.vy;
-        pod.vx *= this.friction;
-        pod.vy *= this.friction;
     }
 }
