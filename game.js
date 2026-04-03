@@ -318,6 +318,9 @@ class Game {
         
         const level = levels[this.currentLevelIndex];
         
+        // 0. Update Radar
+        this.drawRadar(level);
+
         this.ctx.save();
         this.ctx.translate(-this.cameraX, -this.cameraY);
 
@@ -413,6 +416,42 @@ class Game {
         });
 
         this.ctx.restore();
+    }
+
+    drawRadar(level) {
+        const radarCanvas = document.getElementById('radar-canvas');
+        if (!radarCanvas) return;
+        const rctx = radarCanvas.getContext('2d');
+        const scale = 150 / 1000; // Map 1000 to 150px
+        
+        rctx.clearRect(0, 0, radarCanvas.width, radarCanvas.height);
+        
+        // Use a slight neon glow for terrain
+        rctx.strokeStyle = 'rgba(0, 243, 255, 0.3)';
+        rctx.lineWidth = 1;
+        rctx.beginPath();
+        for (let i = 0; i < level.terrain.length; i += 2) {
+            const rx = level.terrain[i] * scale;
+            const ry = level.terrain[i+1] * scale;
+            if (i === 0) rctx.moveTo(rx, ry);
+            else rctx.lineTo(rx, ry);
+        }
+        rctx.stroke();
+
+        // Ship Icon (Pulsing White)
+        const pulse = (Math.sin(Date.now() / 200) + 1) / 2;
+        rctx.fillStyle = `rgba(255, 255, 255, ${0.5 + pulse * 0.5})`;
+        rctx.fillRect(this.ship.x * scale - 2, this.ship.y * scale - 2, 4, 4);
+
+        // Pod/Cargo (Neon Pink)
+        if (!this.pod.isCollected) {
+            rctx.fillStyle = '#ff00ff';
+            rctx.fillRect(this.pod.x * scale - 2, this.pod.y * scale - 2, 4, 4);
+        }
+
+        // Exit Port (Neon Blue)
+        rctx.strokeStyle = '#00f2ff';
+        rctx.strokeRect(level.exit.x * scale - 3, level.exit.y * scale - 3, 6, 6);
     }
 
     loop() {

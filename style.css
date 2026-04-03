@@ -57,6 +57,21 @@ canvas {
     align-items: center;
 }
 
+#radar-container {
+    position: absolute;
+    top: 80px; /* Below Top-Right HUD items */
+    right: 20px;
+    z-index: 5;
+    background: rgba(10, 10, 12, 0.7);
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+}
+
+#radar-canvas {
+    display: block;
+}
+
 .hud-cargo-box {
     width: 14px;
     height: 14px;
