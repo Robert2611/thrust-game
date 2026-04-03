@@ -13,8 +13,10 @@ class Game {
         this.ship = {
             x: 0, y: 0, vx: 0, vy: 0, rotation: 0, 
             fuel: 0, isThrusting: false, isRotatingLeft: false, isRotatingRight: false,
-            isExploded: false, isOnPlatform: true
+            isExploded: false, isOnPlatform: true, explosionTriggered: false
         };
+        
+        this.resetTimeout = null;
         
         this.pod = {
             x: 0, y: 0, vx: 0, vy: 0, isAttached: false
@@ -31,13 +33,21 @@ class Game {
     updateDifficultyHUD() {
         const textEl = document.getElementById('difficulty-text');
         if (textEl) textEl.innerText = this.difficulty.toUpperCase();
+
+        // Highlight selected button
+        ['easy', 'normal', 'hard'].forEach(id => {
+            const btn = document.getElementById(`btn-${id}`);
+            if (btn) {
+                if (this.difficulty === id) btn.classList.add('selected');
+                else btn.classList.remove('selected');
+            }
+        });
     }
 
     initResize() {
         const resize = () => {
             this.canvas.width = window.innerWidth;
             this.canvas.height = window.innerHeight;
-            if (this.state === 'PLAYING') this.resetLevel();
         };
         window.addEventListener('resize', resize);
         resize();
@@ -116,15 +126,20 @@ class Game {
     }
 
     resetLevel() {
+        if (this.resetTimeout) {
+            clearTimeout(this.resetTimeout);
+            this.resetTimeout = null;
+        }
+
         const level = levels[this.currentLevelIndex];
         const diff = difficultySettings[this.difficulty];
-        
+
         this.ship = {
             x: level.shipStart.x, y: level.shipStart.y,
             vx: 0, vy: 0, rotation: 0,
             fuel: level.fuel * (1 / diff.fuelMult),
             isThrusting: false, isRotatingLeft: false, isRotatingRight: false,
-            isExploded: false, isOnPlatform: true
+            isExploded: false, isOnPlatform: true, explosionTriggered: false
         };
         
         this.pod = {
@@ -145,9 +160,10 @@ class Game {
 
         // 1. Handle Explosion & Restart
         if (this.ship.isExploded) {
-            if (this.particles.length === 0) {
+            if (!this.ship.explosionTriggered) {
+                this.ship.explosionTriggered = true;
                 this.spawnExplosion();
-                setTimeout(() => this.resetLevel(), 2000);
+                this.resetTimeout = setTimeout(() => this.resetLevel(), 2000);
             }
             this.updateParticles();
             return;

@@ -136,9 +136,10 @@ canvas {
     transition: all 0.2s;
 }
 
-.difficulty-picker button:hover {
+.difficulty-picker button:hover, .difficulty-picker button.selected {
     background: var(--neon-blue);
     color: black;
+    box-shadow: 0 0 15px var(--neon-blue);
 }
 
 #start-btn {

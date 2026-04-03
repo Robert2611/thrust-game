@@ -66,16 +66,22 @@ class PhysicsEngine {
             if (shipBottomY >= p.y - 5 && shipBottomY <= p.y + 5 && 
                 obj.x >= p.x - p.width/2 && obj.x <= p.x + p.width/2) {
                 
-                // Safe landing check: upright and slow
-                const isUpright = Math.abs(obj.rotation % (Math.PI * 2)) < 0.2;
-                const isSlow = Math.abs(obj.vy) < 1.0 && Math.abs(obj.vx) < 1.0;
+                // Safe landing check: upright, slow, AND moving downwards
+                const angle = Math.atan2(Math.sin(obj.rotation), Math.cos(obj.rotation));
+                const isUpright = Math.abs(angle) < 0.5; // More gentle: ~28 degrees allowed
+                const isSlow = Math.abs(obj.vy) < 2.0 && Math.abs(obj.vx) < 2.0; // More gentle speed: 2.0 units
+                const isDescending = obj.vy >= 0;
 
-                if (isUpright && isSlow) {
-                    obj.y = p.y - 10; // Snap to platform
-                    return 'LANDED';
-                } else {
-                    return 'DEATH'; // Crash landing (nose/side hit or too fast)
+                if (isDescending) {
+                    if (isUpright && isSlow) {
+                        obj.y = p.y - 10; // Snap to platform
+                        return 'LANDED';
+                    } else {
+                        return 'DEATH'; // Crash landing (nose/side hit or too fast)
+                    }
                 }
+                // If ascending (not descending), we just ignore the platform check
+                // and let the ship continue upward.
             }
         }
 
