@@ -86,6 +86,8 @@ class Game {
         bindTouch('thrust-ctrl', 'thrust');
         
         document.getElementById('start-btn').onclick = () => this.startLevel();
+        const nextBtn = document.getElementById('next-btn');
+        if (nextBtn) nextBtn.onclick = () => this.nextLevel();
     }
 
     handleKey(e, isDown) {
@@ -93,9 +95,13 @@ class Game {
             if (e.code === 'Enter') this.startLevel();
             if (e.code === 'ArrowLeft') this.cycleDifficulty(-1);
             if (e.code === 'ArrowRight') this.cycleDifficulty(1);
-            if (e.code === 'Digit1' || e.code === 'Numpad1') setDifficulty('easy');
-            if (e.code === 'Digit2' || e.code === 'Numpad2') setDifficulty('normal');
-            if (e.code === 'Digit3' || e.code === 'Numpad3') setDifficulty('hard');
+            if (e.code === 'Digit1' || e.code === 'Numpad1') window.setDifficulty('easy');
+            if (e.code === 'Digit2' || e.code === 'Numpad2') window.setDifficulty('normal');
+            if (e.code === 'Digit3' || e.code === 'Numpad3') window.setDifficulty('hard');
+        }
+
+        if (this.state === 'SUCCESS' && isDown) {
+            if (e.code === 'Enter') this.nextLevel();
         }
 
         switch(e.code) {
@@ -223,10 +229,23 @@ class Game {
         // Success condition (at exit platform)
         const distToExit = Math.sqrt((this.ship.x - level.exit.x)**2 + (this.ship.y - level.exit.y)**2);
         if (distToExit < level.exit.radius && this.ship.cargo && this.ship.isOnPlatform) {
-            alert("MISSION COMPLETE!");
-            this.currentLevelIndex = (this.currentLevelIndex + 1) % levels.length;
-            this.startLevel();
+            this.showSuccessScreen();
         }
+    }
+
+    showSuccessScreen() {
+        this.state = 'SUCCESS';
+        const screen = document.getElementById('success-screen');
+        const fuelVal = document.getElementById('final-fuel');
+        if (fuelVal) fuelVal.innerText = Math.floor(this.ship.fuel);
+        if (screen) screen.style.display = 'flex';
+    }
+
+    nextLevel() {
+        const screen = document.getElementById('success-screen');
+        if (screen) screen.style.display = 'none';
+        this.currentLevelIndex = (this.currentLevelIndex + 1) % levels.length;
+        this.startLevel();
     }
 
     updateCargoHUD() {
@@ -291,14 +310,18 @@ class Game {
             this.ctx.stroke();
         });
 
-        // 3. Draw Exit
+        // 3. Draw Exit Port (Empty Crate on Platform)
         this.ctx.shadowColor = '#00f2ff';
         this.ctx.strokeStyle = '#00f2ff';
-        this.ctx.beginPath();
-        this.ctx.arc(level.exit.x, level.exit.y, level.exit.radius, 0, Math.PI * 2);
-        this.ctx.setLineDash([5, 5]);
-        this.ctx.stroke();
-        this.ctx.setLineDash([]);
+        
+        // Draw the empty crate frame sitting on the platform
+        this.ctx.strokeRect(level.exit.x - 10, level.exit.y - 20, 20, 20);
+        
+        // Fill the crate if mission is successful
+        if (this.state === 'SUCCESS') {
+            this.ctx.fillStyle = '#ff00ff'; // Match cargo color
+            this.ctx.fillRect(level.exit.x - 10, level.exit.y - 20, 20, 20);
+        }
 
         // 4. Draw Pod (if not collected: Filled Square)
         if (!this.pod.isCollected) {

@@ -17,17 +17,20 @@ const levels = [
     },
     {
         name: "THE GAUNTLET",
-        gravity: 0.18,
-        fuel: 1000,
-        shipStart: { x: 50, y: 290 },
-        podStart: { x: 900, y: 790, type: "QUANTUM FUEL" },
-        exit: { x: 50, y: 300, radius: 40 },
+        gravity: 0.14,
+        fuel: 1500,
+        shipStart: { x: 100, y: 340 },
+        podStart: { x: 900, y: 740, type: "QUANTUM FUEL" },
+        exit: { x: 100, y: 350, radius: 40 },
         platforms: [
-            { x: 50, y: 300, width: 60 },
-            { x: 900, y: 800, width: 60 }
+            { x: 100, y: 350, width: 80 },
+            { x: 900, y: 750, width: 80 }
         ],
         terrain: [
-            0, 0, 1000, 0, 1000, 800, 0, 800, 0, 450, 800, 450, 800, 250, 0, 250, 0, 0
+            0, 0, 1000, 0, 1000, 800, 0, 800, 
+            0, 500, 750, 500, 0, 500, // Bottom slat (double back)
+            0, 200, 750, 200, 0, 200, // Top slat (double back)
+            0, 0 // Home
         ]
     }
 ];
