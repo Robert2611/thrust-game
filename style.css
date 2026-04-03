@@ -16,16 +16,23 @@ body {
     color: white;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 #game-container {
-    width: 100vw;
-    height: 100vh;
+    flex: 1;
     display: flex;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
     position: relative;
     background: radial-gradient(circle at center, #1b1b22 0%, #0a0a0c 100%);
+}
+
+#play-area {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
 }
 
 canvas {
@@ -82,16 +89,14 @@ canvas {
 }
 
 #mobile-controls {
-    position: absolute;
-    bottom: 20px;
-    left: 0;
-    width: 100%;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     grid-template-areas: "left right" "thrust thrust";
     gap: 15px;
     padding: 20px;
     box-sizing: border-box;
+    background: #0a0a0c;
+    border-top: 1px solid rgba(0, 243, 255, 0.1);
 }
 
 /* For Phone Play: Large Touch Zones */

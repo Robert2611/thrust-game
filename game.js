@@ -25,8 +25,8 @@ class Game {
         
         this.particles = [];
         
-        this.viewportOffsetX = 0;
-        this.viewportOffsetY = 0;
+        this.cameraX = 0;
+        this.cameraY = 0;
         this.virtualWidth = 1000;
         this.virtualHeight = 800;
 
@@ -51,17 +51,11 @@ class Game {
     }
 
     initResize() {
+        const playArea = document.getElementById('play-area');
         const resize = () => {
-            this.canvas.width = window.innerWidth;
-            this.canvas.height = window.innerHeight;
-            
-            // Calculate centering offsets
-            this.viewportOffsetX = (this.canvas.width - this.virtualWidth) / 2;
-            this.viewportOffsetY = (this.canvas.height - this.virtualHeight) / 2;
-            
-            // Ensure we don't have negative offsets if window is smaller than virtual size
-            this.viewportOffsetX = Math.max(0, this.viewportOffsetX);
-            this.viewportOffsetY = Math.max(0, this.viewportOffsetY);
+            this.canvas.width = playArea.clientWidth;
+            this.canvas.height = playArea.clientHeight;
+            this.updateCamera(true); // Immediate update on resize
         };
         window.addEventListener('resize', resize);
         resize();
@@ -206,7 +200,8 @@ class Game {
         }
         
         this.physics.update(this.ship, this.pod, level.terrain, level.platforms);
-        
+        this.updateCamera();
+
         // 3. Cargo Collection Logic (on landing)
         if (this.ship.isOnPlatform && !this.pod.isCollected && !this.ship.isExploded) {
             const distToPod = Math.sqrt((this.ship.x - this.pod.x)**2 + (this.ship.y - this.pod.y)**2);
@@ -236,6 +231,33 @@ class Game {
             setTimeout(() => {
                 this.showSuccessScreen();
             }, 1200); // 1.2 second delay for the 'feel'
+        }
+    }
+
+    updateCamera(immediate = false) {
+        let targetX, targetY;
+
+        // X Logic
+        if (this.canvas.width >= this.virtualWidth) {
+            targetX = -(this.canvas.width - this.virtualWidth) / 2;
+        } else {
+            targetX = Math.max(0, Math.min(this.ship.x - this.canvas.width / 2, this.virtualWidth - this.canvas.width));
+        }
+
+        // Y Logic
+        if (this.canvas.height >= this.virtualHeight) {
+            targetY = -(this.canvas.height - this.virtualHeight) / 2;
+        } else {
+            targetY = Math.max(0, Math.min(this.ship.y - this.canvas.height / 2, this.virtualHeight - this.canvas.height));
+        }
+
+        if (immediate) {
+            this.cameraX = targetX;
+            this.cameraY = targetY;
+        } else {
+            // Lerp for smoothness
+            this.cameraX += (targetX - this.cameraX) * 0.1;
+            this.cameraY += (targetY - this.cameraY) * 0.1;
         }
     }
 
@@ -297,7 +319,7 @@ class Game {
         const level = levels[this.currentLevelIndex];
         
         this.ctx.save();
-        this.ctx.translate(this.viewportOffsetX, this.viewportOffsetY);
+        this.ctx.translate(-this.cameraX, -this.cameraY);
 
         // 1. Draw Terrain
         this.ctx.shadowBlur = 15;

@@ -8,48 +8,51 @@
 </head>
 <body>
     <div id="game-container">
-        <canvas id="game-canvas"></canvas>
-        
-        <!-- HUD -->
-        <div id="hud">
-            <div class="hud-item" id="fuel-container">
-                <label>FUEL</label>
-                <div class="bar-bg"><div id="fuel-bar"></div></div>
+        <!-- The Protected Play Area (No overap) -->
+        <div id="play-area">
+            <canvas id="game-canvas"></canvas>
+            
+            <!-- HUD (Inside Play Area) -->
+            <div id="hud">
+                <div class="hud-item" id="fuel-container">
+                    <label>FUEL</label>
+                    <div class="bar-bg"><div id="fuel-bar"></div></div>
+                </div>
+                <div class="hud-item" id="difficulty-display">
+                    <span id="difficulty-text">EASY</span>
+                </div>
+                <div class="hud-item" id="score-display">
+                    00000
+                </div>
+                <div class="hud-item" id="cargo-status">
+                    HOLD: <div id="cargo-box-hud" class="hud-cargo-box"></div>
+                </div>
             </div>
-            <div class="hud-item" id="difficulty-display">
-                <span id="difficulty-text">EASY</span>
+
+            <!-- Overlays (Inside Play Area) -->
+            <div id="start-screen" class="overlay">
+                <h1>THRUST: NEON</h1>
+                <p>Navigate the cave. Retrieve the pod.</p>
+                <div class="difficulty-picker">
+                    <button id="btn-easy" onclick="setDifficulty('easy')">SMOOTH</button>
+                    <button id="btn-normal" onclick="setDifficulty('normal')">NORMAL</button>
+                    <button id="btn-hard" onclick="setDifficulty('hard')">THRUST MASTER</button>
+                </div>
+                <button id="start-btn">START MISSION</button>
+                <p style="font-size: 0.8rem; margin-top: 10px; color: rgba(255, 255, 255, 0.5);">[ ENTER to launch ]</p>
             </div>
-            <div class="hud-item" id="score-display">
-                00000
-            </div>
-            <div class="hud-item" id="cargo-status">
-                HOLD: <div id="cargo-box-hud" class="hud-cargo-box"></div>
+
+            <div id="success-screen" class="overlay" style="display: none;">
+                <h1 class="bounce">MISSION COMPLETE!</h1>
+                <div class="stats-box" style="margin-bottom: 30px; font-size: 1.5rem; color: var(--neon-blue);">
+                    <p>FUEL REMAINING: <span id="final-fuel">0</span></p>
+                </div>
+                <button id="next-btn" class="neon-btn">NEXT MISSION</button>
+                <p style="font-size: 0.8rem; margin-top: 10px; color: rgba(255, 255, 255, 0.5);">[ ENTER to continue ]</p>
             </div>
         </div>
 
-        <!-- Overlays -->
-        <div id="start-screen" class="overlay">
-            <h1>THRUST: NEON</h1>
-            <p>Navigate the cave. Retrieve the pod.</p>
-            <div class="difficulty-picker">
-                <button id="btn-easy" onclick="setDifficulty('easy')">SMOOTH</button>
-                <button id="btn-normal" onclick="setDifficulty('normal')">NORMAL</button>
-                <button id="btn-hard" onclick="setDifficulty('hard')">THRUST MASTER</button>
-            </div>
-            <button id="start-btn">START MISSION</button>
-            <p style="font-size: 0.8rem; margin-top: 10px; color: rgba(255, 255, 255, 0.5);">[ ENTER to launch ]</p>
-        </div>
-
-        <div id="success-screen" class="overlay" style="display: none;">
-            <h1 class="bounce">MISSION COMPLETE!</h1>
-            <div class="stats-box" style="margin-bottom: 30px; font-size: 1.5rem; color: var(--neon-blue);">
-                <p>FUEL REMAINING: <span id="final-fuel">0</span></p>
-            </div>
-            <button id="next-btn" class="neon-btn">NEXT MISSION</button>
-            <p style="font-size: 0.8rem; margin-top: 10px; color: rgba(255, 255, 255, 0.5);">[ ENTER to continue ]</p>
-        </div>
-
-        <!-- Mobile Controls -->
+        <!-- The Dedicated Control Deck (Bottom Layer) -->
         <div id="mobile-controls">
             <div id="left-ctrl" class="touch-zone">⟲</div>
             <div id="right-ctrl" class="touch-zone">⟳</div>
