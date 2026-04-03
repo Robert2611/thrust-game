@@ -25,6 +25,11 @@ class Game {
         
         this.particles = [];
         
+        this.viewportOffsetX = 0;
+        this.viewportOffsetY = 0;
+        this.virtualWidth = 1000;
+        this.virtualHeight = 800;
+
         this.initResize();
         this.initControls();
         this.updateDifficultyHUD();
@@ -49,6 +54,14 @@ class Game {
         const resize = () => {
             this.canvas.width = window.innerWidth;
             this.canvas.height = window.innerHeight;
+            
+            // Calculate centering offsets
+            this.viewportOffsetX = (this.canvas.width - this.virtualWidth) / 2;
+            this.viewportOffsetY = (this.canvas.height - this.virtualHeight) / 2;
+            
+            // Ensure we don't have negative offsets if window is smaller than virtual size
+            this.viewportOffsetX = Math.max(0, this.viewportOffsetX);
+            this.viewportOffsetY = Math.max(0, this.viewportOffsetY);
         };
         window.addEventListener('resize', resize);
         resize();
@@ -71,18 +84,32 @@ class Game {
         bindTouch('left-ctrl', 'rotateLeft');
         bindTouch('right-ctrl', 'rotateRight');
         bindTouch('thrust-ctrl', 'thrust');
-        bindTouch('beam-ctrl', 'beam');
         
         document.getElementById('start-btn').onclick = () => this.startLevel();
     }
 
     handleKey(e, isDown) {
+        if (this.state === 'MENU' && isDown) {
+            if (e.code === 'Enter') this.startLevel();
+            if (e.code === 'ArrowLeft') this.cycleDifficulty(-1);
+            if (e.code === 'ArrowRight') this.cycleDifficulty(1);
+            if (e.code === 'Digit1' || e.code === 'Numpad1') setDifficulty('easy');
+            if (e.code === 'Digit2' || e.code === 'Numpad2') setDifficulty('normal');
+            if (e.code === 'Digit3' || e.code === 'Numpad3') setDifficulty('hard');
+        }
+
         switch(e.code) {
             case 'ArrowLeft': this.handleAction('rotateLeft', isDown); break;
             case 'ArrowRight': this.handleAction('rotateRight', isDown); break;
             case 'ArrowUp': this.handleAction('thrust', isDown); break;
-            case 'Space': this.handleAction('beam', isDown); break;
         }
+    }
+
+    cycleDifficulty(dir) {
+        const diffs = ['easy', 'normal', 'hard'];
+        let idx = diffs.indexOf(this.difficulty);
+        idx = (idx + dir + diffs.length) % diffs.length;
+        window.setDifficulty(diffs[idx]);
     }
 
     handleAction(action, isDown) {
@@ -99,18 +126,6 @@ class Game {
                 this.ship.isThrusting = isDown; 
                 if (isDown && this.ship.isOnPlatform) this.ship.isOnPlatform = false;
                 break;
-            case 'beam': if (isDown) this.toggleBeam(); break;
-        }
-    }
-
-    toggleBeam() {
-        // Only attach if close to the pod
-        const dx = this.ship.x - this.pod.x;
-        const dy = this.ship.y - this.pod.y;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        
-        if (dist < 100) {
-            this.pod.isAttached = !this.pod.isAttached;
         }
     }
 
@@ -251,6 +266,9 @@ class Game {
         
         const level = levels[this.currentLevelIndex];
         
+        this.ctx.save();
+        this.ctx.translate(this.viewportOffsetX, this.viewportOffsetY);
+
         // 1. Draw Terrain
         this.ctx.shadowBlur = 15;
         this.ctx.shadowColor = '#00f2ff';
@@ -282,13 +300,11 @@ class Game {
         this.ctx.stroke();
         this.ctx.setLineDash([]);
 
-        // 4. Draw Pod (if not collected)
+        // 4. Draw Pod (if not collected: Filled Square)
         if (!this.pod.isCollected) {
             this.ctx.shadowColor = '#ff00ff';
-            this.ctx.strokeStyle = '#ff00ff';
-            this.ctx.beginPath();
-            this.ctx.arc(this.pod.x, this.pod.y, 15, 0, Math.PI * 2);
-            this.ctx.stroke();
+            this.ctx.fillStyle = '#ff00ff';
+            this.ctx.fillRect(this.pod.x - 10, this.pod.y - 10, 20, 20);
         }
 
         // 5. Draw Ship (if not exploded)
@@ -332,15 +348,7 @@ class Game {
             this.ctx.restore();
         });
 
-        // 7. Draw Tether
-        if (this.pod.isAttached) {
-            this.ctx.shadowColor = '#fff';
-            this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-            this.ctx.beginPath();
-            this.ctx.moveTo(this.ship.x, this.ship.y);
-            this.ctx.lineTo(this.pod.x, this.pod.y);
-            this.ctx.stroke();
-        }
+        this.ctx.restore();
     }
 
     loop() {

@@ -80,12 +80,7 @@ class PhysicsEngine {
             }
         }
 
-        // 2. Boundary check
-        if (obj.y > this.canvas.height || obj.y < 0 || obj.x < 0 || obj.x > this.canvas.width) {
-            return 'DEATH';
-        }
-
-        // 3. Terrain Collision (Fatal walls)
+        // 2. Terrain Collision (Fatal walls)
         for (let i = 0; i < terrain.length - 2; i += 2) {
             if (this.lineCircleIntersection(terrain[i], terrain[i+1], terrain[i+2], terrain[i+3], obj.x, obj.y, 8)) {
                 return 'DEATH';
