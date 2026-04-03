@@ -1,0 +1,166 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+:root {
+    --neon-blue: #00f3ff;
+    --neon-pink: #ff00ff;
+    --neon-green: #39ff14;
+    --dark-bg: #0a0a0c;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: var(--dark-bg);
+    font-family: 'Orbitron', sans-serif;
+    color: white;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+#game-container {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    background: radial-gradient(circle at center, #1b1b22 0%, #0a0a0c 100%);
+}
+
+canvas {
+    background: transparent;
+    display: block;
+}
+
+#hud {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    pointer-events: none;
+    text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+}
+
+.hud-item {
+    font-size: 1.2rem;
+}
+
+.bar-bg {
+    width: 200px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(0, 243, 255, 0.3);
+    margin-top: 5px;
+}
+
+#fuel-bar {
+    width: 100%;
+    height: 100%;
+    background: var(--neon-blue);
+    box-shadow: 0 0 10px var(--neon-blue);
+    transition: width 0.1s linear;
+}
+
+#mobile-controls {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas: "rot left" "rot right" "thrust beam";
+    gap: 15px;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* For Phone Play: Large Touch Zones */
+.touch-zone {
+    height: 80px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(0, 243, 255, 0.2);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1.5rem;
+    color: var(--neon-blue);
+    transition: all 0.2s;
+    touch-action: none;
+}
+
+.touch-zone:active {
+    background: rgba(0, 243, 255, 0.2);
+    border-color: var(--neon-blue);
+    box-shadow: 0 0 15px var(--neon-blue);
+    transform: scale(0.95);
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 10, 12, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.overlay h1 {
+    font-size: 3rem;
+    color: var(--neon-pink);
+    text-shadow: 0 0 20px var(--neon-pink);
+    margin-bottom: 20px;
+}
+
+.difficulty-picker {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.difficulty-picker button {
+    background: transparent;
+    border: 1px solid var(--neon-blue);
+    color: var(--neon-blue);
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+
+.difficulty-picker button:hover {
+    background: var(--neon-blue);
+    color: black;
+}
+
+#start-btn {
+    background: var(--neon-green);
+    color: black;
+    border: none;
+    padding: 15px 40px;
+    font-size: 1.5rem;
+    font-family: inherit;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 0 20px var(--neon-green);
+    transition: transform 0.2s;
+}
+
+#start-btn:hover {
+    transform: scale(1.1);
+}
+
+/* Responsive adjustment for desktop */
+@media (min-width: 768px) {
+    #mobile-controls {
+        display: none;
+    }
+}

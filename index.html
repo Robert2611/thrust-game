@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Thrust: Neon Edition</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas"></canvas>
+        
+        <!-- HUD -->
+        <div id="hud">
+            <div class="hud-item" id="fuel-container">
+                <label>FUEL</label>
+                <div class="bar-bg"><div id="fuel-bar"></div></div>
+            </div>
+            <div class="hud-item" id="difficulty-display">
+                <span id="difficulty-text">EASY</span>
+            </div>
+            <div class="hud-item" id="score-display">
+                00000
+            </div>
+        </div>
+
+        <!-- Overlays -->
+        <div id="start-screen" class="overlay">
+            <h1>THRUST: NEON</h1>
+            <p>Navigate the cave. Retrieve the pod.</p>
+            <div class="difficulty-picker">
+                <button onclick="setDifficulty('easy')">SMOOTH</button>
+                <button onclick="setDifficulty('normal')">NORMAL</button>
+                <button onclick="setDifficulty('hard')">THRUST MASTER</button>
+            </div>
+            <button id="start-btn">START MISSION</button>
+        </div>
+
+        <!-- Mobile Controls -->
+        <div id="mobile-controls">
+            <div id="left-ctrl" class="touch-zone">⟲</div>
+            <div id="right-ctrl" class="touch-zone">⟳</div>
+            <div id="thrust-ctrl" class="touch-zone">THRUST</div>
+            <div id="beam-ctrl" class="touch-zone">BEAM</div>
+        </div>
+    </div>
+    
+    <script src="levels.js"></script>
+    <script src="physics.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
