@@ -228,13 +228,21 @@ class Game {
         
         // Success condition (at exit platform)
         const distToExit = Math.sqrt((this.ship.x - level.exit.x)**2 + (this.ship.y - level.exit.y)**2);
-        if (distToExit < level.exit.radius && this.ship.cargo && this.ship.isOnPlatform) {
-            this.showSuccessScreen();
+        if (distToExit < level.exit.radius && this.ship.cargo && this.ship.isOnPlatform && this.state !== 'SUCCESS') {
+            // 1. Immediately trigger 'SUCCESS' state visually
+            this.state = 'SUCCESS';
+            
+            // 2. Wait a moment before showing the overlay (Cinematic Delay)
+            setTimeout(() => {
+                this.showSuccessScreen();
+            }, 1200); // 1.2 second delay for the 'feel'
         }
     }
 
     showSuccessScreen() {
-        this.state = 'SUCCESS';
+        // Only show if we are still in SUCCESS state (not crashed)
+        if (this.state !== 'SUCCESS') return;
+        
         const screen = document.getElementById('success-screen');
         const fuelVal = document.getElementById('final-fuel');
         if (fuelVal) fuelVal.innerText = Math.floor(this.ship.fuel);
@@ -249,10 +257,13 @@ class Game {
     }
 
     updateCargoHUD() {
-        const textEl = document.getElementById('cargo-text');
-        if (textEl) {
-            textEl.innerText = this.ship.cargo ? `[ ${this.ship.cargo} ]` : '[ EMPTY ]';
-            textEl.style.color = this.ship.cargo ? '#39ff14' : '#fff'; // Green if loaded
+        const boxEl = document.getElementById('cargo-box-hud');
+        if (boxEl) {
+            if (this.ship.cargo) {
+                boxEl.classList.add('filled');
+            } else {
+                boxEl.classList.remove('filled');
+            }
         }
     }
 
@@ -310,16 +321,16 @@ class Game {
             this.ctx.stroke();
         });
 
-        // 3. Draw Exit Port (Empty Crate on Platform)
-        this.ctx.shadowColor = '#00f2ff';
-        this.ctx.strokeStyle = '#00f2ff';
+        // 3. Draw Exit Port (Empty Crate on Platform - Match Cargo Color)
+        this.ctx.shadowColor = '#ff00ff';
+        this.ctx.strokeStyle = '#ff00ff';
         
         // Draw the empty crate frame sitting on the platform
         this.ctx.strokeRect(level.exit.x - 10, level.exit.y - 20, 20, 20);
         
         // Fill the crate if mission is successful
         if (this.state === 'SUCCESS') {
-            this.ctx.fillStyle = '#ff00ff'; // Match cargo color
+            this.ctx.fillStyle = '#ff00ff';
             this.ctx.fillRect(level.exit.x - 10, level.exit.y - 20, 20, 20);
         }
 
@@ -344,6 +355,14 @@ class Game {
             this.ctx.lineTo(-10, 10);
             this.ctx.closePath();
             this.ctx.stroke();
+            
+            // Draw Cargo Icon inside Ship
+            if (this.ship.cargo) {
+                this.ctx.fillStyle = '#ff00ff';
+                this.ctx.shadowBlur = 10;
+                this.ctx.fillRect(-3, -3, 6, 6);
+                this.ctx.shadowBlur = 15;
+            }
             
             if (this.ship.isThrusting && this.ship.fuel > 0) {
                 this.ctx.beginPath();

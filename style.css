@@ -46,6 +46,23 @@ canvas {
 
 .hud-item {
     font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+}
+
+.hud-cargo-box {
+    width: 14px;
+    height: 14px;
+    border: 1px solid rgba(0, 243, 255, 0.4);
+    display: inline-block;
+    margin-left: 10px;
+    transition: all 0.3s;
+}
+
+.hud-cargo-box.filled {
+    background: var(--neon-pink);
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 10px var(--neon-pink);
 }
 
 .bar-bg {
