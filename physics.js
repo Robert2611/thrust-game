@@ -9,7 +9,16 @@ class PhysicsEngine {
         this.isExploded = false;
     }
 
-    update(ship, pod, terrain) {
+    update(ship, pod, terrain, platforms) {
+        // 0. Disable physics if exploded or on platform (until thrusting)
+        if (ship.isExploded) return;
+        
+        if (ship.isOnPlatform) {
+            ship.vx = 0;
+            ship.vy = 0;
+            return;
+        }
+
         // 1. Handle Input (Thrust and Rotation)
         if (ship.isThrusting && ship.fuel > 0) {
             ship.vx += Math.cos(ship.rotation - Math.PI / 2) * this.thrustStrength;
@@ -30,12 +39,17 @@ class PhysicsEngine {
 
         // 5. Rotation is handled by input events directly in the ship object
 
-        // 6. Handle Collision with Terrain
-        const collision = this.checkCollisions(ship, terrain);
-        if (collision) {
+        // 6. Handle Collision with Platforms and Terrain
+        const result = this.checkAllCollisions(ship, terrain, platforms);
+        if (result === 'DEATH') {
             ship.isExploded = true;
             ship.vx = 0;
             ship.vy = 0;
+        } else if (result === 'LANDED') {
+            ship.isOnPlatform = true;
+            ship.vx = 0;
+            ship.vy = 0;
+            ship.rotation = 0; // Snap to upright
         }
 
         // 7. Handle Pod and Tether (Optional Feature)
@@ -44,25 +58,40 @@ class PhysicsEngine {
         }
     }
 
-    checkCollisions(obj, terrain) {
-        // 1. Boundary check
-        if (obj.y > this.canvas.height || obj.y < 0 || obj.x < 0 || obj.x > this.canvas.width) {
-            return true;
-        }
+    checkAllCollisions(obj, terrain, platforms) {
+        // 1. Check Platforms (Safe zones)
+        for (const p of platforms) {
+            const shipBottomY = obj.y + 10;
+            // Height check (near the platform surface)
+            if (shipBottomY >= p.y - 5 && shipBottomY <= p.y + 5 && 
+                obj.x >= p.x - p.width/2 && obj.x <= p.x + p.width/2) {
+                
+                // Safe landing check: upright and slow
+                const isUpright = Math.abs(obj.rotation % (Math.PI * 2)) < 0.2;
+                const isSlow = Math.abs(obj.vy) < 1.0 && Math.abs(obj.vx) < 1.0;
 
-        // 2. Terrain Collision (Point in Polygon)
-        // We iterate through segments of the terrain and check for proximity
-        for (let i = 0; i < terrain.length - 2; i += 2) {
-            const x1 = terrain[i];
-            const y1 = terrain[i + 1];
-            const x2 = terrain[i + 2];
-            const y2 = terrain[i + 3];
-
-            if (this.lineCircleIntersection(x1, y1, x2, y2, obj.x, obj.y, 8)) {
-                return true;
+                if (isUpright && isSlow) {
+                    obj.y = p.y - 10; // Snap to platform
+                    return 'LANDED';
+                } else {
+                    return 'DEATH'; // Crash landing (nose/side hit or too fast)
+                }
             }
         }
-        return false;
+
+        // 2. Boundary check
+        if (obj.y > this.canvas.height || obj.y < 0 || obj.x < 0 || obj.x > this.canvas.width) {
+            return 'DEATH';
+        }
+
+        // 3. Terrain Collision (Fatal walls)
+        for (let i = 0; i < terrain.length - 2; i += 2) {
+            if (this.lineCircleIntersection(terrain[i], terrain[i+1], terrain[i+2], terrain[i+3], obj.x, obj.y, 8)) {
+                return 'DEATH';
+            }
+        }
+        
+        return 'NONE';
     }
 
     lineCircleIntersection(x1, y1, x2, y2, cx, cy, radius) {

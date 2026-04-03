@@ -13,16 +13,24 @@ class Game {
         this.ship = {
             x: 0, y: 0, vx: 0, vy: 0, rotation: 0, 
             fuel: 0, isThrusting: false, isRotatingLeft: false, isRotatingRight: false,
-            isExploded: false
+            isExploded: false, isOnPlatform: true
         };
         
         this.pod = {
             x: 0, y: 0, vx: 0, vy: 0, isAttached: false
         };
         
+        this.particles = [];
+        
         this.initResize();
         this.initControls();
+        this.updateDifficultyHUD();
         this.setupMenu();
+    }
+
+    updateDifficultyHUD() {
+        const textEl = document.getElementById('difficulty-text');
+        if (textEl) textEl.innerText = this.difficulty.toUpperCase();
     }
 
     initResize() {
@@ -70,9 +78,16 @@ class Game {
         if (this.state !== 'PLAYING' || this.ship.isExploded) return;
         
         switch(action) {
-            case 'rotateLeft': this.ship.isRotatingLeft = isDown; break;
-            case 'rotateRight': this.ship.isRotatingRight = isDown; break;
-            case 'thrust': this.ship.isThrusting = isDown; break;
+            case 'rotateLeft': 
+                if (!this.ship.isOnPlatform) this.ship.isRotatingLeft = isDown; 
+                break;
+            case 'rotateRight': 
+                if (!this.ship.isOnPlatform) this.ship.isRotatingRight = isDown; 
+                break;
+            case 'thrust': 
+                this.ship.isThrusting = isDown; 
+                if (isDown && this.ship.isOnPlatform) this.ship.isOnPlatform = false;
+                break;
             case 'beam': if (isDown) this.toggleBeam(); break;
         }
     }
@@ -109,13 +124,15 @@ class Game {
             vx: 0, vy: 0, rotation: 0,
             fuel: level.fuel * (1 / diff.fuelMult),
             isThrusting: false, isRotatingLeft: false, isRotatingRight: false,
-            isExploded: false
+            isExploded: false, isOnPlatform: true
         };
         
         this.pod = {
             x: level.podStart.x, y: level.podStart.y,
             vx: 0, vy: 0, isAttached: false
         };
+
+        this.particles = [];
         
         this.physics.gravity = level.gravity * diff.gravityMult;
         this.physics.thrustStrength = 0.25 * diff.thrustMult;
@@ -123,29 +140,73 @@ class Game {
 
     update() {
         if (this.state !== 'PLAYING') return;
-        
-        // Handle rotation speed manually
-        if (this.ship.isRotatingLeft) this.ship.rotation -= this.physics.rotationSpeed;
-        if (this.ship.isRotatingRight) this.ship.rotation += this.physics.rotationSpeed;
-        
+
         const level = levels[this.currentLevelIndex];
-        this.physics.update(this.ship, this.pod, level.terrain);
+
+        // 1. Handle Explosion & Restart
+        if (this.ship.isExploded) {
+            if (this.particles.length === 0) {
+                this.spawnExplosion();
+                setTimeout(() => this.resetLevel(), 2000);
+            }
+            this.updateParticles();
+            return;
+        }
+
+        // Update lingering particles if any
+        this.updateParticles();
         
-        // Game condition checks
+        // 2. Handle rotation speed if not on platform
+        if (!this.ship.isOnPlatform) {
+            if (this.ship.isRotatingLeft) this.ship.rotation -= this.physics.rotationSpeed;
+            if (this.ship.isRotatingRight) this.ship.rotation += this.physics.rotationSpeed;
+        } else {
+            this.ship.isRotatingLeft = false;
+            this.ship.isRotatingRight = false;
+        }
+        
+        this.physics.update(this.ship, this.pod, level.terrain, level.platforms);
+        
+        // 3. Game condition checks
         if (this.ship.fuel <= 0) this.ship.isThrusting = false;
         
         // Update HUD
         const fuelBar = document.getElementById('fuel-bar');
-        const maxFuel = level.fuel * (1 / difficultySettings[this.difficulty].fuelMult);
+        const diff = difficultySettings[this.difficulty];
+        const maxFuel = level.fuel * (1 / diff.fuelMult);
         fuelBar.style.width = `${(this.ship.fuel / maxFuel) * 100}%`;
         
-        // Success condition (at exit with pod)
+        // Success condition (at exit platform)
         const distToExit = Math.sqrt((this.ship.x - level.exit.x)**2 + (this.ship.y - level.exit.y)**2);
-        if (distToExit < level.exit.radius && this.pod.isAttached) {
+        if (distToExit < level.exit.radius && this.pod.isAttached && this.ship.isOnPlatform) {
             alert("MISSION COMPLETE!");
             this.currentLevelIndex = (this.currentLevelIndex + 1) % levels.length;
             this.startLevel();
         }
+    }
+
+    spawnExplosion() {
+        for (let i = 0; i < 15; i++) {
+            this.particles.push({
+                x: this.ship.x,
+                y: this.ship.y,
+                vx: (Math.random() - 0.5) * 10,
+                vy: (Math.random() - 0.5) * 10,
+                rotation: Math.random() * Math.PI * 2,
+                rv: (Math.random() - 0.5) * 0.2,
+                life: 1.0
+            });
+        }
+    }
+
+    updateParticles() {
+        this.particles.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.rotation += p.rv;
+            p.life -= 0.01;
+        });
+        this.particles = this.particles.filter(p => p.life > 0);
     }
 
     draw() {
@@ -153,11 +214,9 @@ class Game {
         
         const level = levels[this.currentLevelIndex];
         
-        // Glow effect
+        // 1. Draw Terrain
         this.ctx.shadowBlur = 15;
         this.ctx.shadowColor = '#00f2ff';
-        
-        // Draw Terrain
         this.ctx.strokeStyle = '#00f2ff';
         this.ctx.lineWidth = 2;
         this.ctx.beginPath();
@@ -167,44 +226,74 @@ class Game {
         }
         this.ctx.stroke();
 
-        // Draw Exit
+        // 2. Draw Platforms (Neon Green)
+        this.ctx.shadowColor = '#39ff14';
+        this.ctx.strokeStyle = '#39ff14';
+        level.platforms.forEach(p => {
+            this.ctx.beginPath();
+            this.ctx.moveTo(p.x - p.width/2, p.y);
+            this.ctx.lineTo(p.x + p.width/2, p.y);
+            this.ctx.stroke();
+        });
+
+        // 3. Draw Exit
+        this.ctx.shadowColor = '#00f2ff';
+        this.ctx.strokeStyle = '#00f2ff';
         this.ctx.beginPath();
         this.ctx.arc(level.exit.x, level.exit.y, level.exit.radius, 0, Math.PI * 2);
         this.ctx.setLineDash([5, 5]);
         this.ctx.stroke();
         this.ctx.setLineDash([]);
 
-        // Draw Pod
+        // 4. Draw Pod
         this.ctx.shadowColor = '#ff00ff';
         this.ctx.strokeStyle = '#ff00ff';
         this.ctx.beginPath();
         this.ctx.arc(this.pod.x, this.pod.y, 15, 0, Math.PI * 2);
         this.ctx.stroke();
 
-        // Draw Ship
-        this.ctx.shadowColor = '#fff';
-        this.ctx.strokeStyle = '#fff';
-        this.ctx.save();
-        this.ctx.translate(this.ship.x, this.ship.y);
-        this.ctx.rotate(this.ship.rotation);
-        
-        this.ctx.beginPath();
-        this.ctx.moveTo(0, -15);
-        this.ctx.lineTo(10, 10);
-        this.ctx.lineTo(-10, 10);
-        this.ctx.closePath();
-        this.ctx.stroke();
-        
-        if (this.ship.isThrusting && this.ship.fuel > 0) {
+        // 5. Draw Ship (if not exploded)
+        if (!this.ship.isExploded) {
+            this.ctx.shadowColor = '#fff';
+            this.ctx.strokeStyle = '#fff';
+            this.ctx.save();
+            this.ctx.translate(this.ship.x, this.ship.y);
+            this.ctx.rotate(this.ship.rotation);
+            
             this.ctx.beginPath();
-            this.ctx.moveTo(-5, 10);
-            this.ctx.lineTo(0, 25);
-            this.ctx.lineTo(5, 10);
+            this.ctx.moveTo(0, -15);
+            this.ctx.lineTo(10, 10);
+            this.ctx.lineTo(-10, 10);
+            this.ctx.closePath();
             this.ctx.stroke();
+            
+            if (this.ship.isThrusting && this.ship.fuel > 0) {
+                this.ctx.beginPath();
+                this.ctx.moveTo(-5, 10);
+                this.ctx.lineTo(0, 25);
+                this.ctx.lineTo(5, 10);
+                this.ctx.stroke();
+            }
+            this.ctx.restore();
         }
-        this.ctx.restore();
 
-        // Draw Tether
+        // 6. Draw Explosion Particles
+        this.particles.forEach(p => {
+            this.ctx.save();
+            this.ctx.shadowColor = `rgba(255, 255, 255, ${p.life})`;
+            this.ctx.strokeStyle = `rgba(255, 255, 255, ${p.life})`;
+            this.ctx.translate(p.x, p.y);
+            this.ctx.rotate(p.rotation);
+            this.ctx.beginPath();
+            this.ctx.moveTo(0, -5);
+            this.ctx.lineTo(5, 5);
+            this.ctx.lineTo(-5, 5);
+            this.ctx.closePath();
+            this.ctx.stroke();
+            this.ctx.restore();
+        });
+
+        // 7. Draw Tether
         if (this.pod.isAttached) {
             this.ctx.shadowColor = '#fff';
             this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
@@ -228,5 +317,5 @@ class Game {
 const game = new Game();
 window.setDifficulty = (diff) => {
     game.difficulty = diff;
-    document.getElementById('difficulty-text').innerText = diff.toUpperCase();
+    game.updateDifficultyHUD();
 };
