@@ -7,16 +7,20 @@
     --dark-bg: #0a0a0c;
 }
 
-body {
+html, body {
     margin: 0;
     padding: 0;
     overflow: hidden;
     background: var(--dark-bg);
+}
+
+body {
     font-family: 'Orbitron', sans-serif;
     color: white;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    height: 100vh;
+    height: 100vh; /* Fallback */
+    height: 100dvh;
     display: flex;
     flex-direction: column;
 }
