@@ -106,7 +106,7 @@ canvas {
 #mobile-controls {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    grid-template-areas: "left right" "thrust thrust";
+    grid-template-areas: "left right";
     gap: 15px;
     padding: 20px;
     box-sizing: border-box;
@@ -116,14 +116,14 @@ canvas {
 
 /* For Phone Play: Large Touch Zones */
 .touch-zone {
-    height: 80px;
+    height: 120px;
     background: rgba(255, 255, 255, 0.05);
     border: 2px solid rgba(0, 243, 255, 0.2);
     border-radius: 12px;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.5rem;
+    font-size: 2rem;
     color: var(--neon-blue);
     transition: all 0.2s;
     touch-action: none;
@@ -138,7 +138,6 @@ canvas {
 
 #left-ctrl { grid-area: left; }
 #right-ctrl { grid-area: right; }
-#thrust-ctrl { grid-area: thrust; }
 
 .overlay {
     position: absolute;

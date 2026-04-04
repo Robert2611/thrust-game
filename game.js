@@ -30,6 +30,9 @@ class Game {
         this.virtualWidth = 1000;
         this.virtualHeight = 800;
 
+        // Input state tracking
+        this.inputState = { left: false, right: false, thrust: false };
+
         this.initResize();
         this.initControls();
         this.updateDifficultyHUD();
@@ -77,7 +80,6 @@ class Game {
 
         bindTouch('left-ctrl', 'rotateLeft');
         bindTouch('right-ctrl', 'rotateRight');
-        bindTouch('thrust-ctrl', 'thrust');
         
         document.getElementById('start-btn').onclick = () => this.startLevel();
         const nextBtn = document.getElementById('next-btn');
@@ -115,17 +117,33 @@ class Game {
     handleAction(action, isDown) {
         if (this.state !== 'PLAYING' || this.ship.isExploded) return;
         
-        switch(action) {
-            case 'rotateLeft': 
-                if (!this.ship.isOnPlatform) this.ship.isRotatingLeft = isDown; 
-                break;
-            case 'rotateRight': 
-                if (!this.ship.isOnPlatform) this.ship.isRotatingRight = isDown; 
-                break;
-            case 'thrust': 
-                this.ship.isThrusting = isDown; 
-                if (isDown && this.ship.isOnPlatform) this.ship.isOnPlatform = false;
-                break;
+        // 1. Update internal input states
+        if (action === 'rotateLeft') this.inputState.left = isDown;
+        if (action === 'rotateRight') this.inputState.right = isDown;
+        if (action === 'thrust') this.inputState.thrust = isDown;
+
+        // 2. Derive ship actions
+        // Thrust is active if ArrowUp is down OR both Left/Right are down
+        const isActuallyThrusting = this.inputState.thrust || (this.inputState.left && this.inputState.right);
+        
+        this.ship.isThrusting = isActuallyThrusting;
+
+        // Rotation is only active if NOT thrusting (when using combined buttons)
+        // This ensures the ship doesn't rotate while thrusting via the dual-press
+        if (isActuallyThrusting) {
+            this.ship.isRotatingLeft = false;
+            this.ship.isRotatingRight = false;
+        } else {
+            // Only rotate if not on platform
+            if (!this.ship.isOnPlatform) {
+                this.ship.isRotatingLeft = this.inputState.left;
+                this.ship.isRotatingRight = this.inputState.right;
+            }
+        }
+
+        // 3. Handle platform liftoff (only on thrust)
+        if (isActuallyThrusting && this.ship.isOnPlatform) {
+            this.ship.isOnPlatform = false;
         }
     }
 
