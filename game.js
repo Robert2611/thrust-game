@@ -79,6 +79,7 @@ class Game {
         };
 
         bindTouch('left-ctrl', 'rotateLeft');
+        bindTouch('thrust-ctrl', 'thrust');
         bindTouch('right-ctrl', 'rotateRight');
         
         document.getElementById('start-btn').onclick = () => this.startLevel();

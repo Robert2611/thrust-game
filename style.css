@@ -109,8 +109,8 @@ canvas {
 
 #mobile-controls {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    grid-template-areas: "left right";
+    grid-template-columns: 1fr 1.2fr 1fr;
+    grid-template-areas: "left thrust right";
     gap: 15px;
     padding: 20px;
     box-sizing: border-box;
@@ -142,6 +142,20 @@ canvas {
 
 #left-ctrl { grid-area: left; }
 #right-ctrl { grid-area: right; }
+#thrust-ctrl { 
+    grid-area: thrust;
+    background: rgba(255, 0, 255, 0.05); /* Magenta hue for Thrust */
+    border-color: rgba(255, 0, 255, 0.2);
+    color: var(--neon-pink);
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+#thrust-ctrl:active {
+    background: rgba(255, 0, 255, 0.2);
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 15px var(--neon-pink);
+}
 
 .overlay {
     position: absolute;
