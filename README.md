@@ -15,24 +15,39 @@ A high-fidelity 2D physics game inspired by the classic "Thrust". Navigate your 
 | Action | Keyboard | Mobile/Touch |
 | :--- | :--- | :--- |
 | **Rotate** | `Left` / `Right` Arrow Keys | Left/Right Touch Zones |
-| **Thrust** | `Up` Arrow Key | "THRUST" Touch Zone |
-| **Tractor Beam** | `Space` Bar | "BEAM" Touch Zone |
+| **Thrust** | `Up` Arrow Key | Central "THRUST" Zone |
+| **Tractor Beam** | Automatically attaches when landing near the pod (Level 1) | Automatic |
 
 ### Mechanics
-- **Physics**: Real-time Euler integration with gravity, thrust, inertia, and tethers.
-- **Tractor Beam**: Activate when near the pod to tether it to your ship.
-- **Fuel**: Every thrust and second of flight consumes fuel. Don't run dry!
-- **Goal**: Navigate to the pod, attach it, and exit through the dotted circular portal.
+- **Physics**: Real-time Euler integration with gravity, thrust, inertia, and tethering.
+- **Traction**: Land near a pod to collect it.
+- **Fuel**: Every thrust consumes fuel. Don't run dry!
+- **Goal**: Navigate to the pod, collect it, and exit through the magenta portal.
 
 ---
 
 ## 🛠️ Technical Overview
-- **Core**: Vanilla JavaScript (No Frameworks).
-- **Graphics**: HTML5 Canvas with custom ShadowBlur "Neon Glow" rendering.
-- **Responsive**: Fully playable on both Desktop (Keyboard) and Mobile (Touch).
-- **Standalone**: Zero dependencies. Runs directly from `index.html`.
+The project has been refactored into a **Modular Architecture** to support testability and clean separation of concerns:
+- **Models**: `Ship.js`, `Pod.js` manaing state.
+- **Core Logic**: `GameEngine.js`, `PhysicsEngine.js` (headless/testable).
+- **UI/IO**: `InputHandler.js`, `UIManager.js`, `Renderer.js`.
+- **Modules**: Uses standard **ES Modules** (`import`/`export`).
 
-## 🚀 Deployment Instructions
+## 🚀 Local Development
+Because the game uses **ES Modules**, it cannot be opened directly via the `file://` protocol. You must serve it using a local web server:
+
+```bash
+# Using Node.js (npx)
+npx serve .
+
+# Using Python
+python -m http.server 8000
+```
+
+## 🧪 Unit Testing
+The game logic is now fully decoupled from the DOM and Canvas. You can easily integrate a test runner like **Vitest** or **Jest** to test the `GameEngine` or `PhysicsEngine` in isolation.
+
+## 📦 Deployment
 If you are hosting this on **GitHub Pages**, follow these steps:
 1.  Go to **Settings > Pages** in your repository.
 2.  Under **Branch**, select `main` and click **Save**.
