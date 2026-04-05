@@ -54,6 +54,10 @@ export class GameEngine {
     update() {
         if (this.state !== 'PLAYING') return;
 
+        // Ensure ship state is always synced with latest input, 
+        // especially during state changes like liftoff.
+        this.applyInputToShip();
+
         const level = levels[this.currentLevelIndex];
 
         // 1. Handle Explosion & Restart
@@ -113,13 +117,22 @@ export class GameEngine {
     }
 
     applyInputToShip() {
-        const isActuallyThrusting = this.inputState.thrust || (this.inputState.left && this.inputState.right);
+        const isDualThrust = this.inputState.left && this.inputState.right;
+        const isActuallyThrusting = this.inputState.thrust || isDualThrust;
+        
         this.ship.isThrusting = isActuallyThrusting;
 
-        if (isActuallyThrusting) {
+        // Handle platform liftoff BEFORE rotation check
+        if (isActuallyThrusting && this.ship.isOnPlatform) {
+            this.ship.isOnPlatform = false;
+        }
+
+        // Now rotation check will see the updated isOnPlatform state
+        if (isDualThrust && !this.inputState.thrust) {
             this.ship.isRotatingLeft = false;
             this.ship.isRotatingRight = false;
         } else {
+            // Only rotate if not on platform
             if (!this.ship.isOnPlatform) {
                 this.ship.isRotatingLeft = this.inputState.left;
                 this.ship.isRotatingRight = this.inputState.right;
@@ -127,10 +140,6 @@ export class GameEngine {
                 this.ship.isRotatingLeft = false;
                 this.ship.isRotatingRight = false;
             }
-        }
-
-        if (isActuallyThrusting && this.ship.isOnPlatform) {
-            this.ship.isOnPlatform = false;
         }
     }
 
