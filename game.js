@@ -116,21 +116,26 @@ class Game {
     }
 
     handleAction(action, isDown) {
-        if (this.state !== 'PLAYING' || this.ship.isExploded) return;
-        
-        // 1. Update internal input states
+        // 1. Always update internal input states (even if exploded/paused)
         if (action === 'rotateLeft') this.inputState.left = isDown;
         if (action === 'rotateRight') this.inputState.right = isDown;
         if (action === 'thrust') this.inputState.thrust = isDown;
 
-        // 2. Derive ship actions
+        // 2. Only apply to ship if playing and not exploded
+        if (this.state !== 'PLAYING' || this.ship.isExploded) return;
+        
+        this.applyInputToShip();
+    }
+
+    applyInputToShip() {
+        if (!this.ship) return;
+
         // Thrust is active if ArrowUp is down OR both Left/Right are down
         const isActuallyThrusting = this.inputState.thrust || (this.inputState.left && this.inputState.right);
         
         this.ship.isThrusting = isActuallyThrusting;
 
         // Rotation is only active if NOT thrusting (when using combined buttons)
-        // This ensures the ship doesn't rotate while thrusting via the dual-press
         if (isActuallyThrusting) {
             this.ship.isRotatingLeft = false;
             this.ship.isRotatingRight = false;
@@ -139,10 +144,13 @@ class Game {
             if (!this.ship.isOnPlatform) {
                 this.ship.isRotatingLeft = this.inputState.left;
                 this.ship.isRotatingRight = this.inputState.right;
+            } else {
+                this.ship.isRotatingLeft = false;
+                this.ship.isRotatingRight = false;
             }
         }
 
-        // 3. Handle platform liftoff (only on thrust)
+        // Handle platform liftoff
         if (isActuallyThrusting && this.ship.isOnPlatform) {
             this.ship.isOnPlatform = false;
         }
@@ -188,6 +196,9 @@ class Game {
         
         this.physics.gravity = level.gravity * diff.gravityMult;
         this.physics.thrustStrength = 0.25 * diff.thrustMult;
+
+        // Sync fresh ship with current button states
+        this.applyInputToShip();
     }
 
     update() {
