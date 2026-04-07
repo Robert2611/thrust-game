@@ -1,7 +1,8 @@
 import { Ship } from '../models/Ship.js';
 import { Pod } from '../models/Pod.js';
 import { PhysicsEngine } from './PhysicsEngine.js';
-import { levels, difficultySettings } from '../data/levels.js';
+import { levels } from '../data/levels.js';
+import { GameState, InputActions } from '../constants.js';
 
 export class GameEngine {
     constructor() {
@@ -10,9 +11,8 @@ export class GameEngine {
         this.pod = new Pod();
         this.particles = [];
         
-        this.state = 'MENU';
+        this.state = GameState.MENU;
         this.currentLevelIndex = 0;
-        this.difficulty = 'normal';
         
         this.cameraX = 0;
         this.cameraY = 0;
@@ -27,30 +27,27 @@ export class GameEngine {
         this.onExplosion = null;
     }
 
-
-
     startLevel() {
         this.resetLevel();
-        this.state = 'PLAYING';
+        this.state = GameState.PLAYING;
         if (this.onStateChange) this.onStateChange(this.state);
     }
 
     resetLevel() {
         const level = levels[this.currentLevelIndex];
-        const diff = difficultySettings[this.difficulty];
 
-        this.ship.reset(level.shipStart.x, level.shipStart.y, level.fuel * (1 / diff.fuelMult));
+        this.ship.reset(level.shipStart.x, level.shipStart.y, level.fuel);
         this.pod.reset(level.podStart.x, level.podStart.y, level.podStart.type);
         this.particles = [];
         
-        this.physics.gravity = level.gravity * diff.gravityMult;
-        this.physics.thrustStrength = 0.25 * diff.thrustMult;
+        this.physics.gravity = level.gravity;
+        this.physics.thrustStrength = 0.25;
 
         this.applyInputToShip();
     }
 
     update() {
-        if (this.state !== 'PLAYING') return;
+        if (this.state !== GameState.PLAYING) return;
 
         // Ensure ship state is always synced with latest input, 
         // especially during state changes like liftoff.
@@ -99,18 +96,18 @@ export class GameEngine {
         
         // Success condition
         const distToExit = Math.sqrt((this.ship.x - level.exit.x)**2 + (this.ship.y - level.exit.y)**2);
-        if (distToExit < level.exit.radius && this.ship.cargo && this.ship.isOnPlatform && this.state !== 'SUCCESS') {
-            this.state = 'SUCCESS';
+        if (distToExit < level.exit.radius && this.ship.cargo && this.ship.isOnPlatform && this.state !== GameState.SUCCESS) {
+            this.state = GameState.SUCCESS;
             if (this.onStateChange) this.onStateChange(this.state);
         }
     }
 
     handleAction(action, isDown) {
-        if (action === 'rotateLeft') this.inputState.left = isDown;
-        if (action === 'rotateRight') this.inputState.right = isDown;
-        if (action === 'thrust') this.inputState.thrust = isDown;
+        if (action === InputActions.ROTATE_LEFT) this.inputState.left = isDown;
+        if (action === InputActions.ROTATE_RIGHT) this.inputState.right = isDown;
+        if (action === InputActions.THRUST) this.inputState.thrust = isDown;
 
-        if (this.state !== 'PLAYING' || this.ship.isExploded) return;
+        if (this.state !== GameState.PLAYING || this.ship.isExploded) return;
         this.applyInputToShip();
     }
 

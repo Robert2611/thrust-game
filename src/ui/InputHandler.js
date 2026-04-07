@@ -1,3 +1,5 @@
+import { GameState, InputActions } from '../constants.js';
+
 export class InputHandler {
     constructor(gameEngine) {
         this.game = gameEngine;
@@ -18,33 +20,28 @@ export class InputHandler {
             el.addEventListener('pointermove', (e) => e.preventDefault());
         };
 
-        bindTouch('left-ctrl', 'rotateLeft');
-        bindTouch('thrust-ctrl', 'thrust');
-        bindTouch('right-ctrl', 'rotateRight');
+        bindTouch('left-ctrl', InputActions.ROTATE_LEFT);
+        bindTouch('thrust-ctrl', InputActions.THRUST);
+        bindTouch('right-ctrl', InputActions.ROTATE_RIGHT);
         
         document.getElementById('start-btn').onclick = () => this.game.startLevel();
         const nextBtn = document.getElementById('next-btn');
         if (nextBtn) nextBtn.onclick = () => this.game.nextLevel();
-
-
     }
 
     handleKey(e, isDown) {
-        if (this.game.state === 'MENU' && isDown) {
+        if (this.game.state === GameState.MENU && isDown) {
             if (e.code === 'Enter') this.game.startLevel();
-
         }
 
-        if (this.game.state === 'SUCCESS' && isDown) {
+        if (this.game.state === GameState.SUCCESS && isDown) {
             if (e.code === 'Enter') this.game.nextLevel();
         }
 
         switch(e.code) {
-            case 'ArrowLeft': this.game.handleAction('rotateLeft', isDown); break;
-            case 'ArrowRight': this.game.handleAction('rotateRight', isDown); break;
-            case 'ArrowUp': this.game.handleAction('thrust', isDown); break;
+            case 'ArrowLeft': this.game.handleAction(InputActions.ROTATE_LEFT, isDown); break;
+            case 'ArrowRight': this.game.handleAction(InputActions.ROTATE_RIGHT, isDown); break;
+            case 'ArrowUp': this.game.handleAction(InputActions.THRUST, isDown); break;
         }
     }
-
-
 }

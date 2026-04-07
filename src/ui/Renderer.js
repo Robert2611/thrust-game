@@ -1,4 +1,5 @@
 import { levels } from '../data/levels.js';
+import { GameState } from '../constants.js';
 
 export class Renderer {
     constructor(gameEngine, canvas) {
@@ -56,7 +57,7 @@ export class Renderer {
         this.ctx.shadowColor = '#ff00ff';
         this.ctx.strokeStyle = '#ff00ff';
         this.ctx.strokeRect(level.exit.x - 10, level.exit.y - 20, 20, 20);
-        if (this.game.state === 'SUCCESS') {
+        if (this.game.state === GameState.SUCCESS) {
             this.ctx.fillStyle = '#ff00ff';
             this.ctx.fillRect(level.exit.x - 10, level.exit.y - 20, 20, 20);
         }

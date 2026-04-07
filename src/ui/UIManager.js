@@ -1,4 +1,5 @@
-import { levels, difficultySettings } from '../data/levels.js';
+import { levels } from '../data/levels.js';
+import { GameState } from '../constants.js';
 
 export class UIManager {
     constructor(gameEngine) {
@@ -7,7 +8,7 @@ export class UIManager {
         this.successScreen = document.getElementById('success-screen');
         this.fuelBar = document.getElementById('fuel-bar');
         this.finalFuel = document.getElementById('final-fuel');
-
+        
         this.cargoBox = document.getElementById('cargo-box-hud');
         
         this.setupCallbacks();
@@ -23,31 +24,26 @@ export class UIManager {
 
     updateHUD() {
         const level = levels[this.game.currentLevelIndex];
-        const diff = difficultySettings[this.game.difficulty];
-        const maxFuel = level.fuel * (1 / diff.fuelMult);
+        const maxFuel = level.fuel;
         
         if (this.fuelBar) {
             this.fuelBar.style.width = `${(this.game.ship.fuel / maxFuel) * 100}%`;
         }
 
-
-
         if (this.cargoBox) {
             if (this.game.ship.cargo) this.cargoBox.classList.add('filled');
             else this.cargoBox.classList.remove('filled');
         }
-
-
     }
 
     handleStateChange(state) {
-        if (state === 'MENU') {
+        if (state === GameState.MENU) {
             this.startScreen.style.display = 'flex';
             this.successScreen.style.display = 'none';
-        } else if (state === 'PLAYING') {
+        } else if (state === GameState.PLAYING) {
             this.startScreen.style.display = 'none';
             this.successScreen.style.display = 'none';
-        } else if (state === 'SUCCESS') {
+        } else if (state === GameState.SUCCESS) {
             setTimeout(() => {
                 const fuelVal = document.getElementById('final-fuel');
                 if (fuelVal) fuelVal.innerText = Math.floor(this.game.ship.fuel);

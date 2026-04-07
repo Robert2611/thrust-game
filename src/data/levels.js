@@ -1,10 +1,12 @@
+import { CargoType } from '../constants.js';
+
 export const levels = [
     {
         name: "VALLEY OF NEON",
         gravity: 0.12,
         fuel: 1200,
         shipStart: { x: 100, y: 590 },
-        podStart: { x: 800, y: 690, type: "NEON CORE" },
+        podStart: { x: 800, y: 690, type: CargoType.NEON_CORE },
         exit: { x: 100, y: 100, radius: 40 },
         platforms: [
             { x: 100, y: 600, width: 80 }, // Start platform
@@ -20,7 +22,7 @@ export const levels = [
         gravity: 0.14,
         fuel: 1500,
         shipStart: { x: 100, y: 340 },
-        podStart: { x: 900, y: 740, type: "QUANTUM FUEL" },
+        podStart: { x: 900, y: 740, type: CargoType.QUANTUM_FUEL },
         exit: { x: 100, y: 350, radius: 40 },
         platforms: [
             { x: 100, y: 350, width: 80 },
@@ -34,5 +36,3 @@ export const levels = [
         ]
     }
 ];
-
-

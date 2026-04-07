@@ -2,6 +2,7 @@ import { GameEngine } from './core/GameEngine.js';
 import { UIManager } from './ui/UIManager.js';
 import { InputHandler } from './ui/InputHandler.js';
 import { Renderer } from './ui/Renderer.js';
+import { GameState } from './constants.js';
 
 class App {
     constructor() {
@@ -15,8 +16,8 @@ class App {
         this.game.startLevel(); // Initialize but don't start the loop until START buttons
         
         // Return to Menu at start
-        this.game.state = 'MENU';
-        this.ui.handleStateChange('MENU');
+        this.game.state = GameState.MENU;
+        this.ui.handleStateChange(GameState.MENU);
         
         this.loop();
     }
@@ -24,6 +25,7 @@ class App {
     initResize() {
         const playArea = document.getElementById('play-area');
         const resize = () => {
+            if (!playArea) return;
             this.canvas.width = playArea.clientWidth;
             this.canvas.height = playArea.clientHeight;
             this.updateCamera(true);
