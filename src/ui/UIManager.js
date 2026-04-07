@@ -7,7 +7,7 @@ export class UIManager {
         this.successScreen = document.getElementById('success-screen');
         this.fuelBar = document.getElementById('fuel-bar');
         this.finalFuel = document.getElementById('final-fuel');
-        this.difficultyText = document.getElementById('difficulty-text');
+
         this.cargoBox = document.getElementById('cargo-box-hud');
         
         this.setupCallbacks();
@@ -30,23 +30,14 @@ export class UIManager {
             this.fuelBar.style.width = `${(this.game.ship.fuel / maxFuel) * 100}%`;
         }
 
-        if (this.difficultyText) {
-            this.difficultyText.innerText = this.game.difficulty.toUpperCase();
-        }
+
 
         if (this.cargoBox) {
             if (this.game.ship.cargo) this.cargoBox.classList.add('filled');
             else this.cargoBox.classList.remove('filled');
         }
 
-        // Highlight difficulty buttons
-        ['easy', 'normal', 'hard'].forEach(id => {
-            const btn = document.getElementById(`btn-${id}`);
-            if (btn) {
-                if (this.game.difficulty === id) btn.classList.add('selected');
-                else btn.classList.remove('selected');
-            }
-        });
+
     }
 
     handleStateChange(state) {

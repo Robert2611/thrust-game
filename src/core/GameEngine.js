@@ -27,9 +27,7 @@ export class GameEngine {
         this.onExplosion = null;
     }
 
-    setDifficulty(diff) {
-        this.difficulty = diff;
-    }
+
 
     startLevel() {
         this.resetLevel();

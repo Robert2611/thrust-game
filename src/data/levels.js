@@ -35,8 +35,4 @@ export const levels = [
     }
 ];
 
-export const difficultySettings = {
-    easy: { gravityMult: 0.6, fuelMult: 0.6, thrustMult: 1.3 },
-    normal: { gravityMult: 1.0, fuelMult: 1.0, thrustMult: 1.0 },
-    hard: { gravityMult: 1.4, fuelMult: 1.8, thrustMult: 0.8 }
-};
+

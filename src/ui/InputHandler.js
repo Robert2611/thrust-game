@@ -26,22 +26,13 @@ export class InputHandler {
         const nextBtn = document.getElementById('next-btn');
         if (nextBtn) nextBtn.onclick = () => this.game.nextLevel();
 
-        window.setDifficulty = (diff) => {
-            this.game.setDifficulty(diff);
-            if (this.game.onHUDUpdate) this.game.onHUDUpdate();
-        };
+
     }
 
     handleKey(e, isDown) {
         if (this.game.state === 'MENU' && isDown) {
             if (e.code === 'Enter') this.game.startLevel();
-            if (e.code === 'ArrowLeft') this.cycleDifficulty(-1);
-            if (e.code === 'ArrowRight') this.cycleDifficulty(1);
-            if (['Digit1', 'Digit2', 'Digit3', 'Numpad1', 'Numpad2', 'Numpad3'].includes(e.code)) {
-                const diffs = ['easy', 'normal', 'hard'];
-                const idx = parseInt(e.code.slice(-1)) - 1;
-                window.setDifficulty(diffs[idx]);
-            }
+
         }
 
         if (this.game.state === 'SUCCESS' && isDown) {
@@ -55,10 +46,5 @@ export class InputHandler {
         }
     }
 
-    cycleDifficulty(dir) {
-        const diffs = ['easy', 'normal', 'hard'];
-        let idx = diffs.indexOf(this.game.difficulty);
-        idx = (idx + dir + diffs.length) % diffs.length;
-        window.setDifficulty(diffs[idx]);
-    }
+
 }
