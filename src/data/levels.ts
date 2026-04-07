@@ -1,6 +1,7 @@
-import { CargoType } from '../constants.js';
+import { CargoType } from '../constants';
+import { Level } from '../types';
 
-export const levels = [
+export const levels: Level[] = [
     {
         name: "VALLEY OF NEON",
         gravity: 0.12,

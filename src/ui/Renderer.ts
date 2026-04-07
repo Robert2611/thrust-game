@@ -1,16 +1,27 @@
-import { levels } from '../data/levels.js';
-import { GameState } from '../constants.js';
+import { levels } from '../data/levels';
+import { GameState } from '../constants';
+import { GameEngine } from '../core/GameEngine';
+import { Level } from '../types';
 
 export class Renderer {
-    constructor(gameEngine, canvas) {
+    private game: GameEngine;
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    private radarCanvas: HTMLCanvasElement | null;
+    private rctx: CanvasRenderingContext2D | null;
+
+    constructor(gameEngine: GameEngine, canvas: HTMLCanvasElement) {
         this.game = gameEngine;
         this.canvas = canvas;
-        this.ctx = canvas.getContext('2d');
-        this.radarCanvas = document.getElementById('radar-canvas');
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error("Could not get 2D context");
+        this.ctx = context;
+
+        this.radarCanvas = document.getElementById('radar-canvas') as HTMLCanvasElement | null;
         this.rctx = this.radarCanvas ? this.radarCanvas.getContext('2d') : null;
     }
 
-    draw() {
+    public draw(): void {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         const level = levels[this.game.currentLevelIndex];
         
@@ -29,7 +40,7 @@ export class Renderer {
         this.ctx.restore();
     }
 
-    drawTerrain(level) {
+    private drawTerrain(level: Level): void {
         this.ctx.shadowBlur = 15;
         this.ctx.shadowColor = '#00f2ff';
         this.ctx.strokeStyle = '#00f2ff';
@@ -42,7 +53,7 @@ export class Renderer {
         this.ctx.stroke();
     }
 
-    drawPlatforms(level) {
+    private drawPlatforms(level: Level): void {
         this.ctx.shadowColor = '#39ff14';
         this.ctx.strokeStyle = '#39ff14';
         level.platforms.forEach(p => {
@@ -53,7 +64,7 @@ export class Renderer {
         });
     }
 
-    drawExit(level) {
+    private drawExit(level: Level): void {
         this.ctx.shadowColor = '#ff00ff';
         this.ctx.strokeStyle = '#ff00ff';
         this.ctx.strokeRect(level.exit.x - 10, level.exit.y - 20, 20, 20);
@@ -63,7 +74,7 @@ export class Renderer {
         }
     }
 
-    drawPod() {
+    private drawPod(): void {
         if (!this.game.pod.isCollected) {
             this.ctx.shadowColor = '#ff00ff';
             this.ctx.fillStyle = '#ff00ff';
@@ -71,7 +82,7 @@ export class Renderer {
         }
     }
 
-    drawShip() {
+    private drawShip(): void {
         if (!this.game.ship.isExploded) {
             this.ctx.shadowColor = '#fff';
             this.ctx.strokeStyle = '#fff';
@@ -102,7 +113,7 @@ export class Renderer {
         }
     }
 
-    drawParticles() {
+    private drawParticles(): void {
         this.game.particles.forEach(p => {
             this.ctx.save();
             this.ctx.shadowColor = `rgba(255, 255, 255, ${p.life})`;
@@ -119,8 +130,8 @@ export class Renderer {
         });
     }
 
-    drawRadar(level) {
-        if (!this.rctx) return;
+    private drawRadar(level: Level): void {
+        if (!this.rctx || !this.radarCanvas) return;
         const scale = 150 / 1000;
         this.rctx.clearRect(0, 0, this.radarCanvas.width, this.radarCanvas.height);
         this.rctx.strokeStyle = 'rgba(0, 243, 255, 0.3)';

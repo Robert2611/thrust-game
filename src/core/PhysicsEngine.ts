@@ -1,4 +1,13 @@
+import { Ship } from '../models/Ship';
+import { Pod } from '../models/Pod';
+import { Platform } from '../types';
+
 export class PhysicsEngine {
+    public gravity: number = 0.1;
+    public friction: number = 0.99;
+    public thrustStrength: number = 0.25;
+    public rotationSpeed: number = 0.08;
+
     constructor() {
         this.gravity = 0.1;
         this.friction = 0.99;
@@ -6,7 +15,7 @@ export class PhysicsEngine {
         this.rotationSpeed = 0.08;
     }
 
-    update(ship, pod, terrain, platforms) {
+    update(ship: Ship, _pod: Pod, terrain: number[], platforms: Platform[]): void {
         // 0. Disable physics if exploded or on platform (until thrusting)
         if (ship.isExploded) return;
         
@@ -16,7 +25,7 @@ export class PhysicsEngine {
             return;
         }
 
-        // 1. Handle Input (Thrust) - Rotation is handled by ship properties updated via InputHandler
+        // 1. Handle Input (Thrust)
         if (ship.isThrusting && ship.fuel > 0) {
             ship.vx += Math.cos(ship.rotation - Math.PI / 2) * this.thrustStrength;
             ship.vy += Math.sin(ship.rotation - Math.PI / 2) * this.thrustStrength;
@@ -48,7 +57,7 @@ export class PhysicsEngine {
         }
     }
 
-    checkAllCollisions(obj, terrain, platforms) {
+    private checkAllCollisions(obj: Ship, terrain: number[], platforms: Platform[]): 'LANDED' | 'DEATH' | 'NONE' {
         // 1. Check Platforms (Safe zones)
         for (const p of platforms) {
             const shipBottomY = obj.y + 10;
@@ -59,7 +68,7 @@ export class PhysicsEngine {
                 // Safe landing check: upright, slow, AND moving downwards
                 const angle = Math.atan2(Math.sin(obj.rotation), Math.cos(obj.rotation));
                 const isUpright = Math.abs(angle) < 0.5; // More gentle: ~28 degrees allowed
-                const isSlow = Math.abs(obj.vy) < 2.0 && Math.abs(obj.vx) < 2.0; // More gentle speed: 2.0 units
+                const isSlow = Math.abs(obj.vy) < 2.0 && Math.abs(obj.vx) < 2.0; // More gentle speed
                 const isDescending = obj.vy >= 0;
 
                 if (isDescending) {
@@ -67,7 +76,7 @@ export class PhysicsEngine {
                         obj.y = p.y - 10; // Snap to platform
                         return 'LANDED';
                     } else {
-                        return 'DEATH'; // Crash landing (nose/side hit or too fast)
+                        return 'DEATH'; // Crash landing
                     }
                 }
             }
@@ -83,7 +92,7 @@ export class PhysicsEngine {
         return 'NONE';
     }
 
-    lineCircleIntersection(x1, y1, x2, y2, cx, cy, radius) {
+    private lineCircleIntersection(x1: number, y1: number, x2: number, y2: number, cx: number, cy: number, radius: number): boolean {
         const dx = x2 - x1;
         const dy = y2 - y1;
         const len = Math.sqrt(dx * dx + dy * dy);

@@ -1,28 +1,36 @@
-import { GameEngine } from './core/GameEngine.js';
-import { UIManager } from './ui/UIManager.js';
-import { InputHandler } from './ui/InputHandler.js';
-import { Renderer } from './ui/Renderer.js';
-import { GameState } from './constants.js';
+import { GameEngine } from './core/GameEngine';
+import { UIManager } from './ui/UIManager';
+import { InputHandler } from './ui/InputHandler';
+import { Renderer } from './ui/Renderer';
+import { GameState } from './constants';
 
 class App {
+    private canvas: HTMLCanvasElement;
+    private game: GameEngine;
+    private _renderer: Renderer;
+    private _ui: UIManager;
+
     constructor() {
-        this.canvas = document.getElementById('game-canvas');
+        const canvasElement = document.getElementById('game-canvas') as HTMLCanvasElement;
+        if (!canvasElement) throw new Error("Canvas element not found");
+        this.canvas = canvasElement;
+
         this.game = new GameEngine();
-        this.renderer = new Renderer(this.game, this.canvas);
-        this.ui = new UIManager(this.game);
-        this.input = new InputHandler(this.game);
+        this._renderer = new Renderer(this.game, this.canvas);
+        this._ui = new UIManager(this.game);
+        new InputHandler(this.game);
 
         this.initResize();
         this.game.startLevel(); // Initialize but don't start the loop until START buttons
         
         // Return to Menu at start
         this.game.state = GameState.MENU;
-        this.ui.handleStateChange(GameState.MENU);
+        this._ui.handleStateChange(GameState.MENU);
         
         this.loop();
     }
 
-    initResize() {
+    private initResize(): void {
         const playArea = document.getElementById('play-area');
         const resize = () => {
             if (!playArea) return;
@@ -34,8 +42,8 @@ class App {
         resize();
     }
 
-    updateCamera(immediate = false) {
-        let targetX, targetY;
+    private updateCamera(immediate: boolean = false): void {
+        let targetX: number, targetY: number;
         if (this.canvas.width >= this.game.virtualWidth) {
             targetX = -(this.canvas.width - this.game.virtualWidth) / 2;
         } else {
@@ -57,10 +65,10 @@ class App {
         }
     }
 
-    loop() {
+    private loop(): void {
         this.game.update();
         this.updateCamera();
-        this.renderer.draw();
+        this._renderer.draw();
         requestAnimationFrame(() => this.loop());
     }
 }
