@@ -10,7 +10,7 @@ export class Renderer {
     private radarCanvas: HTMLCanvasElement | null;
     private rctx: CanvasRenderingContext2D | null;
     private colors: { [key: string]: string } = {};
-    private stars: { x: number, y: number, size: number, blinkSpeed: number }[] = [];
+    private stars: { x: number, y: number, size: number }[] = [];
 
     constructor(gameEngine: GameEngine, canvas: HTMLCanvasElement) {
         this.game = gameEngine;
@@ -27,8 +27,7 @@ export class Renderer {
             this.stars.push({
                 x: Math.random() * 2000,
                 y: Math.random() * 2000,
-                size: Math.random() * 2 + 0.5,
-                blinkSpeed: Math.random() * 0.05 + 0.01
+                size: Math.random() * 2 + 0.5
             });
         }
     }
@@ -109,7 +108,6 @@ export class Renderer {
     }
 
     private drawStarfield(): void {
-        const time = Date.now();
         this.ctx.save();
 
         // Parallax effect: stars move slower than the camera
@@ -117,10 +115,11 @@ export class Renderer {
         const py = -this.game.cameraY * 0.3;
 
         this.ctx.translate(px, py);
+        
+        this.ctx.fillStyle = this.colors.starColor;
+        this.ctx.globalAlpha = 0.6;
 
         this.stars.forEach(s => {
-            const blink = (Math.sin(time * s.blinkSpeed) + 1) / 2;
-            this.ctx.fillStyle = `rgba(255, 255, 255, ${0.2 + blink * 0.6})`;
             this.ctx.beginPath();
             this.ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
             this.ctx.fill();
