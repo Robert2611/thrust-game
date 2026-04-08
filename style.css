@@ -1,10 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
 :root {
-    --neon-blue: #00f3ff;
-    --neon-pink: #ff00ff;
-    --neon-green: #39ff14;
+    --neon-blue: #4a9eff;    /* Muted Tech Blue */
+    --neon-pink: #d44eff;    /* Muted Magenta */
+    --neon-green: #50fa7b;   /* Muted Green */
     --dark-bg: #0a0a0c;
+    --cave-wall-fill: #1a1b24;
+    --cave-wall-edge: #4a9eff;
 }
 
 html, body {
@@ -30,7 +32,7 @@ body {
     display: flex;
     flex-direction: column;
     position: relative;
-    background: radial-gradient(circle at center, #1b1b22 0%, #0a0a0c 100%);
+    background: radial-gradient(circle at center, #15151a 0%, #050507 100%);
 }
 
 #play-area {
