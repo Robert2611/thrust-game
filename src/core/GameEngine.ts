@@ -31,6 +31,18 @@ export class GameEngine {
         this.pod = new Pod();
         this.particles = [];
         this.state = GameState.MENU;
+
+        // Allow bypassing to a specific level via URL (e.g., ?level=3)
+        if (typeof window !== 'undefined') {
+            const urlParams = new URLSearchParams(window.location.search);
+            const levelParam = urlParams.get('level');
+            if (levelParam !== null) {
+                const parsed = parseInt(levelParam, 10);
+                if (!isNaN(parsed) && parsed >= 1 && parsed <= levels.length) {
+                    this.currentLevelIndex = parsed - 1;
+                }
+            }
+        }
     }
 
     public startLevel(): void {
