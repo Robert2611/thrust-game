@@ -1,12 +1,33 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
 
 :root {
+    /* Base colors */
     --neon-blue: #4a9eff;    /* Muted Tech Blue */
     --neon-pink: #d44eff;    /* Muted Magenta */
     --neon-green: #50fa7b;   /* Muted Green */
     --dark-bg: #0a0a0c;
-    --cave-wall-fill: #1a1b24;
-    --cave-wall-edge: #4a9eff;
+
+    /* Environment */
+    --cave-wall-fill: #1a1b24;   /* Solid rock fill of the cavern */
+    --cave-wall-edge: #4a9eff;   /* Glowing boundary of the reachable space */
+    --star-color: #ffffff;       /* Background stars */
+    
+    /* Game Entities */
+    --ship-color: #ffffff;       /* Player ship fuselage and glow */
+    --ship-cargo-color: #ff00ff; /* The core carried within the ship */
+    --ship-thrust-color: #ecc87ac4; /* Thruster exhaust flame */
+    
+    --pod-color: #d44eff;        /* The capsule target to be collected */
+    --exit-portal-color: #d44eff; /* The destination extraction zone */
+    --platform-color: #50fa7b;   /* Landing platforms for pod and exit */
+    
+    --particle-color: #ffffff;   /* Explosion and thrust particles */
+    
+    /* UI / Radar */
+    --radar-grid-color: rgba(0, 243, 255, 0.3); /* Scanned terrain profile */
+    --radar-ship-color: #ffffff;  /* Pulsing ship marker */
+    --radar-pod-color: #d44eff;   /* Target pod location */
+    --radar-exit-color: #4a9eff;  /* Exit portal destination */
 }
 
 html, body {

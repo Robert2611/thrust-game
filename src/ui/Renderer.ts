@@ -9,7 +9,8 @@ export class Renderer {
     private ctx: CanvasRenderingContext2D;
     private radarCanvas: HTMLCanvasElement | null;
     private rctx: CanvasRenderingContext2D | null;
-    private stars: {x: number, y: number, size: number, blinkSpeed: number}[] = [];
+    private colors: { [key: string]: string } = {};
+    private stars: { x: number, y: number, size: number, blinkSpeed: number }[] = [];
 
     constructor(gameEngine: GameEngine, canvas: HTMLCanvasElement) {
         this.game = gameEngine;
@@ -32,11 +33,31 @@ export class Renderer {
         }
     }
 
+    private updateColors(): void {
+        const style = getComputedStyle(document.documentElement);
+        this.colors = {
+            caveWallFill: style.getPropertyValue('--cave-wall-fill').trim(),
+            caveWallEdge: style.getPropertyValue('--cave-wall-edge').trim(),
+            starColor: style.getPropertyValue('--star-color').trim(),
+            shipColor: style.getPropertyValue('--ship-color').trim(),
+            shipCargoColor: style.getPropertyValue('--ship-cargo-color').trim(),
+            shipThrustColor: style.getPropertyValue('--ship-thrust-color').trim(),
+            podColor: style.getPropertyValue('--pod-color').trim(),
+            exitPortalColor: style.getPropertyValue('--exit-portal-color').trim(),
+            platformColor: style.getPropertyValue('--platform-color').trim(),
+            particleColor: style.getPropertyValue('--particle-color').trim(),
+            radarGridColor: style.getPropertyValue('--radar-grid-color').trim(),
+            radarShipColor: style.getPropertyValue('--radar-ship-color').trim(),
+            radarPodColor: style.getPropertyValue('--radar-pod-color').trim(),
+            radarExitColor: style.getPropertyValue('--radar-exit-color').trim()
+        };
+    }
+
     public draw(): void {
-        const wallFill = getComputedStyle(document.documentElement).getPropertyValue('--cave-wall-fill').trim() || '#1a1b24';
-        
+        this.updateColors();
+
         // 1. Fill the viewport with rock color
-        this.ctx.fillStyle = wallFill;
+        this.ctx.fillStyle = this.colors.caveWallFill;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         const level = levels[this.game.currentLevelIndex];
@@ -49,12 +70,12 @@ export class Renderer {
         this.ctx.save();
         this.ctx.beginPath();
         for (let i = 0; i < level.terrain.length; i += 2) {
-            if (i === 0) this.ctx.moveTo(level.terrain[i], level.terrain[i+1]);
-            else this.ctx.lineTo(level.terrain[i], level.terrain[i+1]);
+            if (i === 0) this.ctx.moveTo(level.terrain[i], level.terrain[i + 1]);
+            else this.ctx.lineTo(level.terrain[i], level.terrain[i + 1]);
         }
         this.ctx.closePath();
         this.ctx.clip();
-        
+
         // Draw Starfield (only visible in corridor)
         this.drawStarfield();
         this.ctx.restore();
@@ -71,33 +92,30 @@ export class Renderer {
     }
 
     private drawTerrain(level: Level): void {
-        const wallEdge = getComputedStyle(document.documentElement).getPropertyValue('--cave-wall-edge').trim() || '#4a9eff';
-
         this.ctx.save();
         this.ctx.beginPath();
         for (let i = 0; i < level.terrain.length; i += 2) {
-            if (i === 0) this.ctx.moveTo(level.terrain[i], level.terrain[i+1]);
-            else this.ctx.lineTo(level.terrain[i], level.terrain[i+1]);
+            if (i === 0) this.ctx.moveTo(level.terrain[i], level.terrain[i + 1]);
+            else this.ctx.lineTo(level.terrain[i], level.terrain[i + 1]);
         }
         this.ctx.closePath();
-        
-        this.ctx.shadowBlur = 8;
-        this.ctx.shadowColor = wallEdge;
-        this.ctx.strokeStyle = wallEdge;
+
+        this.ctx.shadowColor = this.colors.caveWallEdge;
+        this.ctx.strokeStyle = this.colors.caveWallEdge;
         this.ctx.lineWidth = 2;
         this.ctx.stroke();
-        
+
         this.ctx.restore();
     }
 
     private drawStarfield(): void {
         const time = Date.now();
         this.ctx.save();
-        
+
         // Parallax effect: stars move slower than the camera
         const px = -this.game.cameraX * 0.3;
         const py = -this.game.cameraY * 0.3;
-        
+
         this.ctx.translate(px, py);
 
         this.stars.forEach(s => {
@@ -111,66 +129,65 @@ export class Renderer {
     }
 
     private drawPlatforms(level: Level): void {
-        this.ctx.shadowBlur = 5;
-        this.ctx.shadowColor = '#50fa7b';
-        this.ctx.strokeStyle = '#50fa7b';
+        this.ctx.shadowColor = this.colors.platformColor;
+        this.ctx.strokeStyle = this.colors.platformColor;
         level.platforms.forEach(p => {
             this.ctx.beginPath();
-            this.ctx.moveTo(p.x - p.width/2, p.y);
-            this.ctx.lineTo(p.x + p.width/2, p.y);
+            this.ctx.moveTo(p.x - p.width / 2, p.y);
+            this.ctx.lineTo(p.x + p.width / 2, p.y);
             this.ctx.stroke();
         });
     }
 
     private drawExit(level: Level): void {
-        const exitColor = '#d44eff';
-        this.ctx.shadowBlur = 8;
-        this.ctx.shadowColor = exitColor;
-        this.ctx.strokeStyle = exitColor;
+        const color = this.colors.exitPortalColor;
+        this.ctx.shadowColor = color;
+        this.ctx.strokeStyle = color;
         this.ctx.strokeRect(level.exit.x - 10, level.exit.y - 20, 20, 20);
         if (this.game.state === GameState.SUCCESS) {
-            this.ctx.fillStyle = exitColor;
+            this.ctx.fillStyle = color;
             this.ctx.fillRect(level.exit.x - 10, level.exit.y - 20, 20, 20);
         }
     }
 
     private drawPod(): void {
         if (!this.game.pod.isCollected) {
-            const podColor = '#d44eff';
-            this.ctx.shadowBlur = 10;
-            this.ctx.shadowColor = podColor;
-            this.ctx.fillStyle = podColor;
+            const color = this.colors.podColor;
+            this.ctx.shadowColor = color;
+            this.ctx.fillStyle = color;
             this.ctx.fillRect(this.game.pod.x - 10, this.game.pod.y - 10, 20, 20);
         }
     }
 
     private drawShip(): void {
         if (!this.game.ship.isExploded) {
-            this.ctx.shadowBlur = 5;
-            this.ctx.shadowColor = '#fff';
-            this.ctx.strokeStyle = '#fff';
+            this.ctx.shadowColor = this.colors.shipColor;
+            this.ctx.strokeStyle = this.colors.shipColor;
+            this.ctx.fillStyle = this.colors.shipColor;
             this.ctx.save();
             this.ctx.translate(this.game.ship.x, this.game.ship.y);
             this.ctx.rotate(this.game.ship.rotation);
-            
+
             this.ctx.beginPath();
             this.ctx.moveTo(0, -15);
             this.ctx.lineTo(10, 10);
             this.ctx.lineTo(-10, 10);
             this.ctx.closePath();
-            this.ctx.stroke();
-            
+            this.ctx.fill();
+
             if (this.game.ship.cargo) {
-                this.ctx.fillStyle = '#ff00ff';
+                this.ctx.fillStyle = this.colors.shipCargoColor;
                 this.ctx.fillRect(-3, -3, 6, 6);
             }
-            
+
             if (this.game.ship.isThrusting && this.game.ship.fuel > 0) {
+                this.ctx.shadowBlur = 10;
                 this.ctx.beginPath();
                 this.ctx.moveTo(-5, 10);
                 this.ctx.lineTo(0, 25);
                 this.ctx.lineTo(5, 10);
-                this.ctx.stroke();
+                this.ctx.fillStyle = this.colors.shipThrustColor;
+                this.ctx.fill();
             }
             this.ctx.restore();
         }
@@ -197,12 +214,12 @@ export class Renderer {
         if (!this.rctx || !this.radarCanvas) return;
         const scale = 150 / 1000;
         this.rctx.clearRect(0, 0, this.radarCanvas.width, this.radarCanvas.height);
-        this.rctx.strokeStyle = 'rgba(0, 243, 255, 0.3)';
+        this.rctx.strokeStyle = this.colors.radarGridColor;
         this.rctx.lineWidth = 1;
         this.rctx.beginPath();
         for (let i = 0; i < level.terrain.length; i += 2) {
             const rx = level.terrain[i] * scale;
-            const ry = level.terrain[i+1] * scale;
+            const ry = level.terrain[i + 1] * scale;
             if (i === 0) this.rctx.moveTo(rx, ry);
             else this.rctx.lineTo(rx, ry);
         }
@@ -212,15 +229,15 @@ export class Renderer {
         const pulse = (Math.sin(Date.now() / 200) + 1) / 2;
         this.rctx.fillStyle = `rgba(255, 255, 255, ${0.5 + pulse * 0.5})`;
         this.rctx.fillRect(this.game.ship.x * scale - 2, this.game.ship.y * scale - 2, 4, 4);
-        
+
         // Pod
         if (!this.game.pod.isCollected) {
-            this.rctx.fillStyle = '#d44eff';
+            this.rctx.fillStyle = this.colors.radarPodColor;
             this.rctx.fillRect(this.game.pod.x * scale - 2, this.game.pod.y * scale - 2, 4, 4);
         }
-        
+
         // Exit
-        this.rctx.strokeStyle = '#4a9eff';
+        this.rctx.strokeStyle = this.colors.radarExitColor;
         this.rctx.strokeRect(level.exit.x * scale - 3, level.exit.y * scale - 3, 6, 6);
     }
 }
