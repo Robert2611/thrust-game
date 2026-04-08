@@ -21,14 +21,14 @@
     /* Game Entities */
     --ship-color: #ffffff;
     /* Player ship fuselage and glow */
-    --ship-cargo-color: #ff00ff;
+    --ship-cargo-color: #8f0909;
     /* The core carried within the ship */
     --ship-thrust-color: #ecc87ac4;
     /* Thruster exhaust flame */
 
-    --pod-color: #d44eff;
+    --pod-color: var(--ship-cargo-color);
     /* The capsule target to be collected */
-    --exit-portal-color: #d44eff;
+    --exit-portal-color: var(--ship-cargo-color);
     /* The destination extraction zone */
     --platform-color: #50fa7b;
     /* Landing platforms for pod and exit */
@@ -47,7 +47,8 @@
     /* Exit portal destination */
 }
 
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
     width: 100%;
@@ -132,9 +133,9 @@ canvas {
 }
 
 .hud-cargo-box.filled {
-    background: var(--neon-pink);
-    border-color: var(--neon-pink);
-    box-shadow: 0 0 10px var(--neon-pink);
+    background: var(--ship-cargo-color);
+    border-color: var(--ship-cargo-color);
+    box-shadow: 0 0 10px var(--ship-cargo-color);
 }
 
 .bar-bg {

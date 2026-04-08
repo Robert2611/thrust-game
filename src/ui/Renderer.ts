@@ -215,39 +215,46 @@ export class Renderer {
 
     private drawRadar(level: Level): void {
         if (!this.rctx || !this.radarCanvas) return;
-        const scale = 150 / 1000;
         this.rctx.clearRect(0, 0, this.radarCanvas.width, this.radarCanvas.height);
         
         // Fill radar background with rock Fill
         this.rctx.fillStyle = this.colors.caveWallFill || '#1a1b24';
         this.rctx.fillRect(0, 0, this.radarCanvas.width, this.radarCanvas.height);
 
+        // Calculate dynamic scale to fit the entire level, with a 5% margin
+        const targetScale = Math.min(
+            (this.radarCanvas.width * 0.9) / this.game.virtualWidth, 
+            (this.radarCanvas.height * 0.9) / this.game.virtualHeight
+        );
+        const offsetX = (this.radarCanvas.width - this.game.virtualWidth * targetScale) / 2;
+        const offsetY = (this.radarCanvas.height - this.game.virtualHeight * targetScale) / 2;
+
+        this.rctx.save();
+        this.rctx.translate(offsetX, offsetY);
+        this.rctx.scale(targetScale, targetScale);
+
         // Clip out the hallway for the sky
         this.rctx.save();
         this.rctx.beginPath();
         for (let i = 0; i < level.terrain.length; i += 2) {
-            const rx = level.terrain[i] * scale;
-            const ry = level.terrain[i + 1] * scale;
-            if (i === 0) this.rctx.moveTo(rx, ry);
-            else this.rctx.lineTo(rx, ry);
+            if (i === 0) this.rctx.moveTo(level.terrain[i], level.terrain[i + 1]);
+            else this.rctx.lineTo(level.terrain[i], level.terrain[i + 1]);
         }
         this.rctx.closePath();
         this.rctx.clip();
         
         // Fill hallway with sky/void
         this.rctx.fillStyle = '#050507'; // A dark sky color matching the game background
-        this.rctx.fillRect(0, 0, this.radarCanvas.width, this.radarCanvas.height);
+        this.rctx.fillRect(0, 0, this.game.virtualWidth, this.game.virtualHeight);
         this.rctx.restore();
 
         // Outline the boundary
         this.rctx.strokeStyle = this.colors.radarGridColor;
-        this.rctx.lineWidth = 1;
+        this.rctx.lineWidth = 1 / targetScale; // visually maintain 1px
         this.rctx.beginPath();
         for (let i = 0; i < level.terrain.length; i += 2) {
-            const rx = level.terrain[i] * scale;
-            const ry = level.terrain[i + 1] * scale;
-            if (i === 0) this.rctx.moveTo(rx, ry);
-            else this.rctx.lineTo(rx, ry);
+            if (i === 0) this.rctx.moveTo(level.terrain[i], level.terrain[i + 1]);
+            else this.rctx.lineTo(level.terrain[i], level.terrain[i + 1]);
         }
         this.rctx.stroke();
 
@@ -255,17 +262,20 @@ export class Renderer {
         const pulse = (Math.sin(Date.now() / 200) + 1) / 2;
         this.rctx.fillStyle = this.colors.radarShipColor;
         this.rctx.globalAlpha = 0.5 + pulse * 0.5;
-        this.rctx.fillRect(this.game.ship.x * scale - 2, this.game.ship.y * scale - 2, 4, 4);
+        this.rctx.fillRect(this.game.ship.x - 2/targetScale, this.game.ship.y - 2/targetScale, 4/targetScale, 4/targetScale);
         this.rctx.globalAlpha = 1.0;
 
         // Pod
         if (!this.game.pod.isCollected) {
             this.rctx.fillStyle = this.colors.radarPodColor;
-            this.rctx.fillRect(this.game.pod.x * scale - 2, this.game.pod.y * scale - 2, 4, 4);
+            this.rctx.fillRect(this.game.pod.x - 2/targetScale, this.game.pod.y - 2/targetScale, 4/targetScale, 4/targetScale);
         }
 
         // Exit
         this.rctx.strokeStyle = this.colors.radarExitColor;
-        this.rctx.strokeRect(level.exit.x * scale - 3, level.exit.y * scale - 3, 6, 6);
+        this.rctx.lineWidth = 1 / targetScale;
+        this.rctx.strokeRect(level.exit.x - 3/targetScale, level.exit.y - 3/targetScale, 6/targetScale, 6/targetScale);
+
+        this.rctx.restore();
     }
 }
