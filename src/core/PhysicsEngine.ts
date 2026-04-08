@@ -12,13 +12,13 @@ export class PhysicsEngine {
         this.gravity = 0.1;
         this.friction = 0.99;
         this.thrustStrength = 0.25;
-        this.rotationSpeed = 0.08;
+        this.rotationSpeed = 0.04;
     }
 
     update(ship: Ship, _pod: Pod, terrain: number[], platforms: Platform[]): void {
         // 0. Disable physics if exploded or on platform (until thrusting)
         if (ship.isExploded) return;
-        
+
         if (ship.isOnPlatform) {
             ship.vx = 0;
             ship.vy = 0;
@@ -62,9 +62,9 @@ export class PhysicsEngine {
         for (const p of platforms) {
             const shipBottomY = obj.y + 10;
             // Height check (near the platform surface)
-            if (shipBottomY >= p.y - 5 && shipBottomY <= p.y + 5 && 
-                obj.x >= p.x - p.width/2 && obj.x <= p.x + p.width/2) {
-                
+            if (shipBottomY >= p.y - 5 && shipBottomY <= p.y + 5 &&
+                obj.x >= p.x - p.width / 2 && obj.x <= p.x + p.width / 2) {
+
                 // Safe landing check: upright, slow, AND moving downwards
                 const angle = Math.atan2(Math.sin(obj.rotation), Math.cos(obj.rotation));
                 const isUpright = Math.abs(angle) < 0.5; // More gentle: ~28 degrees allowed
@@ -84,11 +84,11 @@ export class PhysicsEngine {
 
         // 2. Terrain Collision (Fatal walls)
         for (let i = 0; i < terrain.length - 2; i += 2) {
-            if (this.lineCircleIntersection(terrain[i], terrain[i+1], terrain[i+2], terrain[i+3], obj.x, obj.y, 8)) {
+            if (this.lineCircleIntersection(terrain[i], terrain[i + 1], terrain[i + 2], terrain[i + 3], obj.x, obj.y, 8)) {
                 return 'DEATH';
             }
         }
-        
+
         return 'NONE';
     }
 
