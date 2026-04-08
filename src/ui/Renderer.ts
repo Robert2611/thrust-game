@@ -33,18 +33,33 @@ export class Renderer {
     }
 
     public draw(): void {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        const level = levels[this.game.currentLevelIndex];
+        const wallFill = getComputedStyle(document.documentElement).getPropertyValue('--cave-wall-fill').trim() || '#1a1b24';
         
+        // 1. Fill the viewport with rock color
+        this.ctx.fillStyle = wallFill;
+        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+        const level = levels[this.game.currentLevelIndex];
         this.drawRadar(level);
 
         this.ctx.save();
-        
-        // Draw Starfield (with parallax)
-        this.drawStarfield();
-
         this.ctx.translate(-this.game.cameraX, -this.game.cameraY);
 
+        // 2. Clear out the corridor and show stars inside it
+        this.ctx.save();
+        this.ctx.beginPath();
+        for (let i = 0; i < level.terrain.length; i += 2) {
+            if (i === 0) this.ctx.moveTo(level.terrain[i], level.terrain[i+1]);
+            else this.ctx.lineTo(level.terrain[i], level.terrain[i+1]);
+        }
+        this.ctx.closePath();
+        this.ctx.clip();
+        
+        // Draw Starfield (only visible in corridor)
+        this.drawStarfield();
+        this.ctx.restore();
+
+        // 3. Draw game entities
         this.drawTerrain(level);
         this.drawPlatforms(level);
         this.drawExit(level);
@@ -56,33 +71,9 @@ export class Renderer {
     }
 
     private drawTerrain(level: Level): void {
-        const wallFill = getComputedStyle(document.documentElement).getPropertyValue('--cave-wall-fill').trim() || '#1a1b24';
         const wallEdge = getComputedStyle(document.documentElement).getPropertyValue('--cave-wall-edge').trim() || '#4a9eff';
 
         this.ctx.save();
-        
-        // 1. Create the "Hole Punch" Path
-        this.ctx.beginPath();
-        
-        // A. Huge Outer Rectangle (The "Infinite Rock")
-        // We use massive coordinates to ensure it covers the entire visible area even when scrolling
-        const size = 10000;
-        this.ctx.rect(-size/2, -size/2, size, size);
-        
-        // B. The Cave Corridor (The "Hole")
-        // Because of 'even-odd' fill rule, drawing this path inside the rectangle will "punch it out"
-        for (let i = 0; i < level.terrain.length; i += 2) {
-            if (i === 0) this.ctx.moveTo(level.terrain[i], level.terrain[i+1]);
-            else this.ctx.lineTo(level.terrain[i], level.terrain[i+1]);
-        }
-        this.ctx.closePath();
-        
-        // 2. Fill the Rock (Everything BUT the corridor)
-        this.ctx.fillStyle = wallFill;
-        this.ctx.fill('evenodd');
-
-        // 3. Draw the Edge Highlight
-        // We draw the corridor again but as a stroke
         this.ctx.beginPath();
         for (let i = 0; i < level.terrain.length; i += 2) {
             if (i === 0) this.ctx.moveTo(level.terrain[i], level.terrain[i+1]);
