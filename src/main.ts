@@ -43,17 +43,23 @@ class App {
     }
 
     private updateCamera(immediate: boolean = false): void {
+        const marginX = 150; // Allow camera to travel 150px outside borders
+        const marginY = 150;
+
         let targetX: number, targetY: number;
-        if (this.canvas.width >= this.game.virtualWidth) {
+        
+        // Horizontal bounds
+        if (this.canvas.width >= this.game.virtualWidth + marginX * 2) {
             targetX = -(this.canvas.width - this.game.virtualWidth) / 2;
         } else {
-            targetX = Math.max(0, Math.min(this.game.ship.x - this.canvas.width / 2, this.game.virtualWidth - this.canvas.width));
+            targetX = Math.max(-marginX, Math.min(this.game.ship.x - this.canvas.width / 2, this.game.virtualWidth - this.canvas.width + marginX));
         }
 
-        if (this.canvas.height >= this.game.virtualHeight) {
+        // Vertical bounds
+        if (this.canvas.height >= this.game.virtualHeight + marginY * 2) {
             targetY = -(this.canvas.height - this.game.virtualHeight) / 2;
         } else {
-            targetY = Math.max(0, Math.min(this.game.ship.y - this.canvas.height / 2, this.game.virtualHeight - this.canvas.height));
+            targetY = Math.max(-marginY, Math.min(this.game.ship.y - this.canvas.height / 2, this.game.virtualHeight - this.canvas.height + marginY));
         }
 
         if (immediate) {

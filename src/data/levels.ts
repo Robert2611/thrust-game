@@ -38,8 +38,8 @@ export const levels: Level[] = [
     },
     {
         name: "DEEP DELVE",
-        gravity: 0.16,
-        fuel: 2000,
+        gravity: 0.12,
+        fuel: 500,
         shipStart: { x: 100, y: 190 },
         podStart: { x: 500, y: 940, type: CargoType.NEON_CORE },
         exit: { x: 900, y: 190, radius: 40 },
@@ -56,21 +56,21 @@ export const levels: Level[] = [
     },
     {
         name: "THE CRUSHER",
-        gravity: 0.18,
-        fuel: 1400,
-        shipStart: { x: 100, y: 140 },
-        podStart: { x: 1400, y: 140, type: CargoType.QUANTUM_FUEL },
-        exit: { x: 100, y: 140, radius: 40 },
+        gravity: 0.15,
+        fuel: 2500,
+        shipStart: { x: 100, y: 180 },
+        podStart: { x: 1400, y: 180, type: CargoType.QUANTUM_FUEL },
+        exit: { x: 100, y: 180, radius: 40 },
         platforms: [
-            { x: 100, y: 150, width: 80 },
-            { x: 1400, y: 150, width: 80 }
+            { x: 100, y: 190, width: 80 },
+            { x: 1400, y: 190, width: 80 }
         ],
         terrain: [
-            0, 150, 200, 150, 300, 250, 400, 150, 600, 250, 800, 100,
-            1000, 250, 1200, 150, 1500, 150,
-            1500, 40, 1200, 40, 1000, 140, 800, -10, 600, 140, 400, 40,
-            300, 140, 200, 40, 0, 40,
-            0, 150
+            0, 190, 200, 190, 300, 290, 400, 190, 600, 290, 800, 140,  
+            1000, 290, 1200, 190, 1500, 190,
+            1500, 0, 1200, 0, 1000, 100, 800, -50, 600, 100, 400, 0,  
+            300, 100, 200, 0, 0, 0,
+            0, 190
         ]
     }
 ];
