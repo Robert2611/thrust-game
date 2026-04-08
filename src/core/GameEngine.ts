@@ -54,6 +54,15 @@ export class GameEngine {
     public resetLevel(): void {
         const level = levels[this.currentLevelIndex];
 
+        let maxX = 1000;
+        let maxY = 800;
+        for (let i = 0; i < level.terrain.length; i += 2) {
+            if (level.terrain[i] > maxX) maxX = level.terrain[i];
+            if (level.terrain[i+1] > maxY) maxY = level.terrain[i+1];
+        }
+        this.virtualWidth = maxX;
+        this.virtualHeight = maxY;
+
         this.ship.reset(level.shipStart.x, level.shipStart.y, level.fuel);
         this.pod.reset(level.podStart.x, level.podStart.y, level.podStart.type);
         this.particles = [];
