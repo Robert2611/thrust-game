@@ -16,7 +16,7 @@ A high-fidelity 2D physics game inspired by the classic "Thrust". Navigate your 
 | :--- | :--- | :--- |
 | **Rotate** | `Left` / `Right` Arrow Keys | Left/Right Touch Zones |
 | **Thrust** | `Up` Arrow Key | Central "THRUST" Zone |
-| **Tractor Beam** | Automatically attaches when landing near the pod (Level 1) | Automatic |
+| **Tractor Beam** | Automatically attaches when landing near the pod | Automatic |
 
 ### Mechanics
 - **Physics**: Real-time Euler integration with gravity, thrust, inertia, and tethering.
@@ -27,31 +27,36 @@ A high-fidelity 2D physics game inspired by the classic "Thrust". Navigate your 
 ---
 
 ## 🛠️ Technical Overview
-The project has been refactored into a **Modular Architecture** to support testability and clean separation of concerns:
-- **Models**: `Ship.js`, `Pod.js` manaing state.
-- **Core Logic**: `GameEngine.js`, `PhysicsEngine.js` (headless/testable).
-- **UI/IO**: `InputHandler.js`, `UIManager.js`, `Renderer.js`.
-- **Modules**: Uses standard **ES Modules** (`import`/`export`).
+The project is built with **TypeScript** and **Vite**, using a modular architecture for clean separation of concerns:
+- **Models**: `Ship.ts`, `Pod.ts` managing state.
+- **Core Logic**: `GameEngine.ts`, `PhysicsEngine.ts` (headless/testable).
+- **UI/IO**: `InputHandler.ts`, `UIManager.ts`, `Renderer.ts`.
+- **Bundling**: Powered by **Vite** for fast development and optimized production builds.
 
 ## 🚀 Local Development
-Because the game uses **ES Modules**, it cannot be opened directly via the `file://` protocol. You must serve it using a local web server:
 
-```bash
-# Using Node.js (npx)
-npx serve .
+To run the game locally for development:
 
-# Using Python
-python -m http.server 8000
-```
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
 
-## 🧪 Unit Testing
-The game logic is now fully decoupled from the DOM and Canvas. You can easily integrate a test runner like **Vitest** or **Jest** to test the `GameEngine` or `PhysicsEngine` in isolation.
+2. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+   The game will be available at `http://localhost:5173`.
 
 ## 📦 Deployment
-If you are hosting this on **GitHub Pages**, follow these steps:
-1.  Go to **Settings > Pages** in your repository.
-2.  Under **Branch**, select `main` and click **Save**.
-3.  Your game will be live at [robert2611.github.io/thrust-game/](https://robert2611.github.io/thrust-game/) in about a minute.
+
+The game is automatically deployed to **GitHub Pages** on every push to the `main` branch.
+
+> [!IMPORTANT]
+> **Setup Requirement**:
+> Ensure your repository is configured to use **GitHub Actions** as the deployment source:
+> 1. Go to **Settings > Pages**.
+> 2. Under **Build and deployment > Source**, select **"GitHub Actions"**.
 
 ## 📜 License
 MIT License. Feel free to fork and improve!
