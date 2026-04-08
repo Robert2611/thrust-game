@@ -2,35 +2,53 @@
 
 :root {
     /* Base colors */
-    --neon-blue: #4a9eff;    /* Muted Tech Blue */
-    --neon-pink: #d44eff;    /* Muted Magenta */
-    --neon-green: #50fa7b;   /* Muted Green */
+    --neon-blue: #4a9eff;
+    /* Muted Tech Blue */
+    --neon-pink: #d44eff;
+    /* Muted Magenta */
+    --neon-green: #50fa7b;
+    /* Muted Green */
     --dark-bg: #0a0a0c;
 
     /* Environment */
-    --cave-wall-fill: #1a1b24;   /* Solid rock fill of the cavern */
-    --cave-wall-edge: #4a9eff;   /* Glowing boundary of the reachable space */
-    --star-color: #ffffff;       /* Background stars */
-    
+    --cave-wall-fill: #180c02;
+    /* Solid rock fill of the cavern */
+    --cave-wall-edge: #532104;
+    /* Glowing boundary of the reachable space */
+    --star-color: #ffffff;
+    /* Background stars */
+
     /* Game Entities */
-    --ship-color: #ffffff;       /* Player ship fuselage and glow */
-    --ship-cargo-color: #ff00ff; /* The core carried within the ship */
-    --ship-thrust-color: #ecc87ac4; /* Thruster exhaust flame */
-    
-    --pod-color: #d44eff;        /* The capsule target to be collected */
-    --exit-portal-color: #d44eff; /* The destination extraction zone */
-    --platform-color: #50fa7b;   /* Landing platforms for pod and exit */
-    
-    --particle-color: #ffffff;   /* Explosion and thrust particles */
-    
+    --ship-color: #ffffff;
+    /* Player ship fuselage and glow */
+    --ship-cargo-color: #ff00ff;
+    /* The core carried within the ship */
+    --ship-thrust-color: #ecc87ac4;
+    /* Thruster exhaust flame */
+
+    --pod-color: #d44eff;
+    /* The capsule target to be collected */
+    --exit-portal-color: #d44eff;
+    /* The destination extraction zone */
+    --platform-color: #50fa7b;
+    /* Landing platforms for pod and exit */
+
+    --particle-color: #837d7d;
+    /* Explosion and thrust particles */
+
     /* UI / Radar */
-    --radar-grid-color: rgba(0, 243, 255, 0.3); /* Scanned terrain profile */
-    --radar-ship-color: #ffffff;  /* Pulsing ship marker */
-    --radar-pod-color: #d44eff;   /* Target pod location */
-    --radar-exit-color: #4a9eff;  /* Exit portal destination */
+    --radar-grid-color: var(--cave-wall-edge);
+    /* Scanned terrain profile */
+    --radar-ship-color: var(--ship-color);
+    /* Pulsing ship marker */
+    --radar-pod-color: var(--pod-color);
+    /* Target pod location */
+    --radar-exit-color: var(--exit-portal-color);
+    /* Exit portal destination */
 }
 
-html, body {
+html,
+body {
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -42,7 +60,8 @@ body {
     color: white;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
-    height: 100vh; /* Fallback */
+    height: 100vh;
+    /* Fallback */
     height: 100dvh;
     display: flex;
     flex-direction: column;
@@ -86,11 +105,12 @@ canvas {
 
 #radar-container {
     position: absolute;
-    top: 80px; /* Below Top-Right HUD items */
+    top: 80px;
+    /* Below Top-Right HUD items */
     right: 20px;
     z-index: 5;
-    background: rgba(10, 10, 12, 0.7);
-    border: 1px solid rgba(0, 243, 255, 0.3);
+    background: var(--cave-wall-fill);
+    border: 1px solid var(--cave-wall-edge);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
     pointer-events: none;
 }
@@ -163,11 +183,18 @@ canvas {
     transform: scale(0.95);
 }
 
-#left-ctrl { grid-area: left; }
-#right-ctrl { grid-area: right; }
-#thrust-ctrl { 
+#left-ctrl {
+    grid-area: left;
+}
+
+#right-ctrl {
+    grid-area: right;
+}
+
+#thrust-ctrl {
     grid-area: thrust;
-    background: rgba(255, 0, 255, 0.05); /* Magenta hue for Thrust */
+    background: rgba(255, 0, 255, 0.05);
+    /* Magenta hue for Thrust */
     border-color: rgba(255, 0, 255, 0.2);
     color: var(--neon-pink);
     font-size: 1.5rem;
@@ -217,13 +244,15 @@ canvas {
     transition: all 0.2s;
 }
 
-.difficulty-picker button:hover, .difficulty-picker button.selected {
+.difficulty-picker button:hover,
+.difficulty-picker button.selected {
     background: var(--neon-blue);
     color: black;
     box-shadow: 0 0 20px var(--neon-blue);
 }
 
-.difficulty-picker button:focus-visible, #start-btn:focus-visible {
+.difficulty-picker button:focus-visible,
+#start-btn:focus-visible {
     outline: 2px solid var(--neon-pink);
     outline-offset: 4px;
 }
@@ -250,8 +279,17 @@ canvas {
 }
 
 @keyframes bounce {
-    0%, 100% { transform: translateY(0) scale(1); text-shadow: 0 0 20px var(--neon-pink); }
-    50% { transform: translateY(-10px) scale(1.05); text-shadow: 0 0 40px var(--neon-pink); }
+
+    0%,
+    100% {
+        transform: translateY(0) scale(1);
+        text-shadow: 0 0 20px var(--neon-pink);
+    }
+
+    50% {
+        transform: translateY(-10px) scale(1.05);
+        text-shadow: 0 0 40px var(--neon-pink);
+    }
 }
 
 .neon-btn {
@@ -320,7 +358,8 @@ canvas {
         width: 100%;
     }
 
-    #start-btn, .neon-btn {
+    #start-btn,
+    .neon-btn {
         padding: 12px 30px;
         font-size: 1.2rem;
     }

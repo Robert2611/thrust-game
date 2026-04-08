@@ -75,6 +75,10 @@ export class Renderer {
         this.ctx.closePath();
         this.ctx.clip();
 
+        // Erase the rock we just painted over the whole screen,
+        // allowing the dark CSS background (space) to show through.
+        this.ctx.clearRect(this.game.cameraX, this.game.cameraY, this.canvas.width, this.canvas.height);
+
         // Draw Starfield (only visible in corridor)
         this.drawStarfield();
         this.ctx.restore();
@@ -213,6 +217,29 @@ export class Renderer {
         if (!this.rctx || !this.radarCanvas) return;
         const scale = 150 / 1000;
         this.rctx.clearRect(0, 0, this.radarCanvas.width, this.radarCanvas.height);
+        
+        // Fill radar background with rock Fill
+        this.rctx.fillStyle = this.colors.caveWallFill || '#1a1b24';
+        this.rctx.fillRect(0, 0, this.radarCanvas.width, this.radarCanvas.height);
+
+        // Clip out the hallway for the sky
+        this.rctx.save();
+        this.rctx.beginPath();
+        for (let i = 0; i < level.terrain.length; i += 2) {
+            const rx = level.terrain[i] * scale;
+            const ry = level.terrain[i + 1] * scale;
+            if (i === 0) this.rctx.moveTo(rx, ry);
+            else this.rctx.lineTo(rx, ry);
+        }
+        this.rctx.closePath();
+        this.rctx.clip();
+        
+        // Fill hallway with sky/void
+        this.rctx.fillStyle = '#050507'; // A dark sky color matching the game background
+        this.rctx.fillRect(0, 0, this.radarCanvas.width, this.radarCanvas.height);
+        this.rctx.restore();
+
+        // Outline the boundary
         this.rctx.strokeStyle = this.colors.radarGridColor;
         this.rctx.lineWidth = 1;
         this.rctx.beginPath();
@@ -226,8 +253,10 @@ export class Renderer {
 
         // Ship
         const pulse = (Math.sin(Date.now() / 200) + 1) / 2;
-        this.rctx.fillStyle = `rgba(255, 255, 255, ${0.5 + pulse * 0.5})`;
+        this.rctx.fillStyle = this.colors.radarShipColor;
+        this.rctx.globalAlpha = 0.5 + pulse * 0.5;
         this.rctx.fillRect(this.game.ship.x * scale - 2, this.game.ship.y * scale - 2, 4, 4);
+        this.rctx.globalAlpha = 1.0;
 
         // Pod
         if (!this.game.pod.isCollected) {

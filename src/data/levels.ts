@@ -5,7 +5,7 @@ export const levels: Level[] = [
     {
         name: "VALLEY OF NEON",
         gravity: 0.12,
-        fuel: 1200,
+        fuel: 250,
         shipStart: { x: 100, y: 590 },
         podStart: { x: 800, y: 690, type: CargoType.NEON_CORE },
         exit: { x: 100, y: 100, radius: 40 },
@@ -22,7 +22,7 @@ export const levels: Level[] = [
     {
         name: "THE GAUNTLET",
         gravity: 0.14,
-        fuel: 1500,
+        fuel: 250,
         shipStart: { x: 100, y: 340 },
         podStart: { x: 900, y: 740, type: CargoType.QUANTUM_FUEL },
         exit: { x: 100, y: 350, radius: 40 },
@@ -31,8 +31,8 @@ export const levels: Level[] = [
             { x: 900, y: 750, width: 80 }
         ],
         terrain: [
-            0, 0, 1000, 0, 1000, 800, 0, 800, 
-            0, 520, 750, 520, 750, 480, 0, 480, 
+            0, 0, 1000, 0, 1000, 800, 0, 800,
+            0, 520, 750, 520, 750, 480, 0, 480,
             0, 220, 750, 220, 750, 180, 0, 180, 0, 0
         ]
     }
