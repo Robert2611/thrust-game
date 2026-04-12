@@ -150,7 +150,7 @@ export class Renderer {
             this.ctx.translate(f.x, f.y);
             this.ctx.rotate(f.rotation);
             
-            this.ctx.fillStyle = this.colors.caveWallEdge;
+            this.ctx.fillStyle = '#888A96'; // Industrial gray
             this.ctx.beginPath();
             
             // Centrifugal blower geometry
