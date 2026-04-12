@@ -72,5 +72,25 @@ export const levels: Level[] = [
             300, 100, 200, 0, 0, 0,
             0, 190
         ]
+    },
+    {
+        name: "WIND TUNNEL",
+        gravity: 0.10,
+        fuel: 500,
+        shipStart: { x: 100, y: 590 },
+        podStart: { x: 800, y: 690, type: CargoType.NEON_CORE },
+        exit: { x: 100, y: 100, radius: 40 },
+        platforms: [
+            { x: 100, y: 600, width: 80 },
+            { x: 800, y: 700, width: 80 },
+            { x: 100, y: 100, width: 80 }
+        ],
+        fans: [
+            { x: 400, y: 700, width: 50, length: 400, rotation: -Math.PI / 2, speed: 3 }
+        ],
+        terrain: [
+            0, 600, 200, 600, 300, 700, 500, 700, 600, 700, 900, 700, 1000, 500,
+            1000, 20, 800, 50, 400, 100, 0, 20, 0, 600
+        ]
     }
 ];

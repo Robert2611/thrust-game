@@ -86,6 +86,7 @@ export class Renderer {
         // 3. Draw game entities
         this.drawTerrain(level);
         this.drawPlatforms(level);
+        this.drawFans(level);
         this.drawExit(level);
         this.drawPod();
         this.drawShip();
@@ -139,6 +140,38 @@ export class Renderer {
             this.ctx.moveTo(p.x - p.width / 2, p.y);
             this.ctx.lineTo(p.x + p.width / 2, p.y);
             this.ctx.stroke();
+        });
+    }
+
+    private drawFans(level: Level): void {
+        const fans = level.fans || [];
+        fans.forEach(f => {
+            this.ctx.save();
+            this.ctx.translate(f.x, f.y);
+            this.ctx.rotate(f.rotation);
+            
+            this.ctx.fillStyle = this.colors.caveWallEdge;
+            this.ctx.beginPath();
+            
+            // Centrifugal blower geometry
+            const R = f.width * 0.7;
+            const cx = -f.width * 1.2;
+            const cy = f.width * 0.2;
+            
+            // The round body
+            this.ctx.arc(cx, cy, R, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            // Tangential rectangular outlet (starts at center and ends at 0 so physics mapping remains accurate at local axis 0 boundary)
+            this.ctx.fillRect(cx, -f.width / 2, Math.abs(cx), f.width);
+
+            // Rotor center hole
+            this.ctx.fillStyle = this.colors.caveWallFill;
+            this.ctx.beginPath();
+            this.ctx.arc(cx, cy, R * 0.4, 0, Math.PI * 2);
+            this.ctx.fill();
+
+            this.ctx.restore();
         });
     }
 

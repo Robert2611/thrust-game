@@ -105,7 +105,7 @@ export class GameEngine {
             this.ship.isRotatingRight = false;
         }
         
-        this.physics.update(this.ship, this.pod, level.terrain, level.platforms);
+        this.physics.update(this.ship, this.pod, level.terrain, level.platforms, level.fans);
         
         if (this.ship.isOnPlatform && !this.pod.isCollected && !this.ship.isExploded) {
             const distToPod = Math.sqrt((this.ship.x - this.pod.x)**2 + (this.ship.y - this.pod.y)**2);

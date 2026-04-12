@@ -9,6 +9,13 @@ export interface Platform extends Point {
     width: number;
 }
 
+export interface Fan extends Point {
+    width: number;
+    length: number;
+    rotation: number;
+    speed: number;
+}
+
 export interface Level {
     name: string;
     gravity: number;
@@ -17,6 +24,7 @@ export interface Level {
     podStart: Point & { type: CargoType };
     exit: Point & { radius: number };
     platforms: Platform[];
+    fans?: Fan[];
     terrain: number[];
 }
 

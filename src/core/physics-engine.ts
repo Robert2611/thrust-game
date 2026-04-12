@@ -1,6 +1,6 @@
 import { Ship } from '../models/ship';
 import { Pod } from '../models/pod';
-import { Platform } from '../types';
+import { Platform, Fan } from '../types';
 import { CollisionDetector } from './collision-detector';
 
 export class PhysicsEngine {
@@ -18,7 +18,7 @@ export class PhysicsEngine {
         this.collisionDetector = new CollisionDetector();
     }
 
-    update(ship: Ship, _pod: Pod, terrain: number[], platforms: Platform[]): void {
+    update(ship: Ship, _pod: Pod, terrain: number[], platforms: Platform[], fans: Fan[] = []): void {
         // 0. Disable physics if exploded or on platform (until thrusting)
         if (ship.isExploded) return;
 
@@ -33,6 +33,28 @@ export class PhysicsEngine {
             ship.vx += Math.cos(ship.rotation - Math.PI / 2) * this.thrustStrength;
             ship.vy += Math.sin(ship.rotation - Math.PI / 2) * this.thrustStrength;
             ship.fuel -= 0.5; // Consume fuel
+        }
+
+        // 1.5. Handle Fans pushes
+        if (fans && fans.length > 0 && !ship.isExploded && !ship.isOnPlatform) {
+            for (const f of fans) {
+                const dx = ship.x - f.x;
+                const dy = ship.y - f.y;
+                const c = Math.cos(f.rotation);
+                const s = Math.sin(f.rotation);
+                
+                const localX = dx * c + dy * s;
+                const localY = -dx * s + dy * c;
+                
+                if (localX >= 0 && localX <= f.length && Math.abs(localY) <= f.width / 2) {
+                    const distanceFactor = 1 - (localX / f.length); // 1.0 at base, 0.0 at tip
+                    // Add acceleration instead of translation. Scale the speed param to a reliable force curve.
+                    const fanForce = f.speed * 0.1 * distanceFactor;
+                    
+                    ship.vx += c * fanForce;
+                    ship.vy += s * fanForce;
+                }
+            }
         }
 
         // 2. Apply Gravity

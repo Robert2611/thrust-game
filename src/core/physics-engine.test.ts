@@ -38,4 +38,26 @@ describe('PhysicsEngine', () => {
         expect(ship.vy).toBeLessThan(0);
         expect(ship.fuel).toBe(99.5);
     });
+
+    it('should accelerate ship if inside fan area', () => {
+        ship.reset(100, 100, 100);
+        ship.isOnPlatform = false;
+        // dist dx = 50. localX = 50. length = 100.
+        // factor = 1 - 50/100 = 0.5.
+        // force = speed(20) * 0.1 * 0.5 = 1.0
+        const fan = { x: 50, y: 100, width: 40, length: 100, rotation: 0, speed: 20 };
+        physics.update(ship, pod, [], [], [fan]);
+        
+        expect(ship.x).toBe(101); // 1.0 vx applied
+        expect(ship.vx).toBe(0.99); // 1.0 * friction
+    });
+
+    it('should not push ship if outside fan stream', () => {
+        ship.reset(100, 50, 100); // outside width limits
+        ship.isOnPlatform = false;
+        const fan = { x: 50, y: 100, width: 40, length: 100, rotation: 0, speed: 2 };
+        physics.update(ship, pod, [], [], [fan]);
+        
+        expect(ship.x).toBe(100); // untranslated
+    });
 });
