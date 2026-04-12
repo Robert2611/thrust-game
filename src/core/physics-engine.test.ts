@@ -42,13 +42,13 @@ describe('PhysicsEngine', () => {
     it('should accelerate ship if inside fan area', () => {
         ship.reset(100, 100, 100);
         ship.isOnPlatform = false;
-        // fan.speed=20, ship vx=0 → diff=20, force=20*0.08=1.6
-        // ship.x += 1.6 vx; then vx *= friction(0.99) → 1.584
+        // fan.speed=20, ship vx=0 → diff=20, force=20*0.04=0.8
+        // ship.x += 0.8; then vx *= friction(0.99) → 0.792
         const fan = { x: 50, y: 100, width: 40, length: 100, rotation: 0, speed: 20 };
         physics.update(ship, pod, [], [], [fan]);
-        
-        expect(ship.x).toBeCloseTo(101.6, 1);
-        expect(ship.vx).toBeCloseTo(1.584, 2);
+
+        expect(ship.x).toBeCloseTo(100.8, 1);
+        expect(ship.vx).toBeCloseTo(0.792, 2);
     });
 
     it('should not push ship if outside fan stream', () => {

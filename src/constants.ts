@@ -21,7 +21,7 @@ export const DEFAULT_FRICTION = 0.99;
 export const DEFAULT_THRUST_STRENGTH = 0.25;
 export const DEFAULT_ROTATION_SPEED = 0.04;
 export const FUEL_BURN_RATE = 0.5;
-export const FAN_LERP_STRENGTH = 0.08;
+export const FAN_LERP_STRENGTH = 0.04;
 
 // --- Collision ---
 export const SHIP_HALF_HEIGHT = 10;           // half-height of ship bounding box
@@ -84,6 +84,8 @@ export const FAN_COLOR_RIM = '#9EA1AE';
 export const FAN_COLOR_BLADE = '#C0C3D0';
 export const FAN_RIM_LINE_WIDTH = 3;
 export const FAN_BLADE_LINE_WIDTH = 2.5;
+export const FAN_TONGUE_RATIO = 0.14;        // tongue size relative to fan width
+export const FAN_DUCT_STUB_RATIO = 1.2;      // duct stub length = R + W * this
 
 // --- Renderer: Radar ---
 export const RADAR_MARGIN = 0.9;             // fraction of radar canvas used (rest is border)
