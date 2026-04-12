@@ -2,7 +2,11 @@ import { Ship } from '../models/ship';
 import { Pod } from '../models/pod';
 import { PhysicsEngine } from './physics-engine';
 import { levels } from '../data/levels';
-import { GameState, InputActions } from '../constants';
+import {
+    GameState, InputActions,
+    DEFAULT_VIRTUAL_WIDTH, DEFAULT_VIRTUAL_HEIGHT,
+    DEFAULT_THRUST_STRENGTH, POD_PICKUP_RADIUS
+} from '../constants';
 import { ParticleSystem } from './particle-system';
 import { Particle, HUDUpdateCallback, StateChangeCallback, ExplosionCallback } from '../types';
 
@@ -21,8 +25,8 @@ export class GameEngine {
     
     public cameraX: number = 0;
     public cameraY: number = 0;
-    public virtualWidth: number = 1000;
-    public virtualHeight: number = 800;
+    public virtualWidth: number = DEFAULT_VIRTUAL_WIDTH;
+    public virtualHeight: number = DEFAULT_VIRTUAL_HEIGHT;
 
     public inputState = { left: false, right: false, thrust: false };
     
@@ -59,8 +63,8 @@ export class GameEngine {
     public resetLevel(): void {
         const level = levels[this.currentLevelIndex];
 
-        let maxX = 1000;
-        let maxY = 800;
+        let maxX = DEFAULT_VIRTUAL_WIDTH;
+        let maxY = DEFAULT_VIRTUAL_HEIGHT;
         for (let i = 0; i < level.terrain.length; i += 2) {
             if (level.terrain[i] > maxX) maxX = level.terrain[i];
             if (level.terrain[i+1] > maxY) maxY = level.terrain[i+1];
@@ -73,7 +77,7 @@ export class GameEngine {
         this.particleSystem.clear();
         
         this.physics.gravity = level.gravity;
-        this.physics.thrustStrength = 0.25;
+        this.physics.thrustStrength = DEFAULT_THRUST_STRENGTH;
 
         this.applyInputToShip();
     }
@@ -109,7 +113,7 @@ export class GameEngine {
         
         if (this.ship.isOnPlatform && !this.pod.isCollected && !this.ship.isExploded) {
             const distToPod = Math.sqrt((this.ship.x - this.pod.x)**2 + (this.ship.y - this.pod.y)**2);
-            if (distToPod < 60) {
+            if (distToPod < POD_PICKUP_RADIUS) {
                 this.ship.cargo = this.pod.type;
                 this.pod.isCollected = true;
                 if (this.onHUDUpdate) this.onHUDUpdate();

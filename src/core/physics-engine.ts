@@ -2,19 +2,23 @@ import { Ship } from '../models/ship';
 import { Pod } from '../models/pod';
 import { Platform, Fan } from '../types';
 import { CollisionDetector } from './collision-detector';
+import {
+    DEFAULT_GRAVITY, DEFAULT_FRICTION, DEFAULT_THRUST_STRENGTH,
+    DEFAULT_ROTATION_SPEED, FUEL_BURN_RATE, FAN_LERP_STRENGTH
+} from '../constants';
 
 export class PhysicsEngine {
-    public gravity: number = 0.1;
-    public friction: number = 0.99;
-    public thrustStrength: number = 0.25;
-    public rotationSpeed: number = 0.08;
+    public gravity: number = DEFAULT_GRAVITY;
+    public friction: number = DEFAULT_FRICTION;
+    public thrustStrength: number = DEFAULT_THRUST_STRENGTH;
+    public rotationSpeed: number = DEFAULT_ROTATION_SPEED;
     private collisionDetector: CollisionDetector;
 
     constructor() {
-        this.gravity = 0.1;
-        this.friction = 0.99;
-        this.thrustStrength = 0.25;
-        this.rotationSpeed = 0.04;
+        this.gravity = DEFAULT_GRAVITY;
+        this.friction = DEFAULT_FRICTION;
+        this.thrustStrength = DEFAULT_THRUST_STRENGTH;
+        this.rotationSpeed = DEFAULT_ROTATION_SPEED;
         this.collisionDetector = new CollisionDetector();
     }
 
@@ -32,7 +36,7 @@ export class PhysicsEngine {
         if (ship.isThrusting && ship.fuel > 0) {
             ship.vx += Math.cos(ship.rotation - Math.PI / 2) * this.thrustStrength;
             ship.vy += Math.sin(ship.rotation - Math.PI / 2) * this.thrustStrength;
-            ship.fuel -= 0.5; // Consume fuel
+            ship.fuel -= FUEL_BURN_RATE;
         }
 
         // 1.5. Handle Fans pushes
@@ -53,7 +57,7 @@ export class PhysicsEngine {
                     const targetWindSpeed = f.speed;
                     const currentAlongFan = ship.vx * c + ship.vy * s;
                     const diff = targetWindSpeed - currentAlongFan;
-                    const force = diff * 0.08; // lerp strength — tweak for feel
+                    const force = diff * FAN_LERP_STRENGTH;
 
                     ship.vx += c * force;
                     ship.vy += s * force;

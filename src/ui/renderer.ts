@@ -1,5 +1,18 @@
 import { levels } from '../data/levels';
-import { GameState } from '../constants';
+import {
+    GameState,
+    STAR_COUNT, STAR_FIELD_SPREAD, STAR_MIN_SIZE, STAR_SIZE_RANGE, STAR_ALPHA, STARFIELD_PARALLAX,
+    TERRAIN_LINE_WIDTH,
+    SHIP_NOSE_Y, SHIP_WING_X, SHIP_WING_Y, SHIP_THRUST_GLOW_BLUR, SHIP_THRUST_TIP_X, SHIP_THRUST_TIP_Y, SHIP_CARGO_HALF,
+    POD_HALF_SIZE, EXIT_HALF_WIDTH, EXIT_HEIGHT,
+    FAN_HOUSING_RADIUS_RATIO, FAN_HOUSING_OFFSET_RATIO, FAN_DUCT_WALL_THICKNESS,
+    FAN_BLADE_COUNT, FAN_BLADE_INNER_RATIO, FAN_BLADE_OUTER_RATIO, FAN_BLADE_SWEEP,
+    FAN_SPIN_PERIOD_MS, FAN_HOUSING_DUCT_JOIN,
+    FAN_COLOR_DUCT, FAN_COLOR_HOUSING, FAN_COLOR_RIM, FAN_COLOR_BLADE,
+    FAN_RIM_LINE_WIDTH, FAN_BLADE_LINE_WIDTH,
+    RADAR_MARGIN, RADAR_PULSE_PERIOD_MS, RADAR_BLIP_SIZE, RADAR_EXIT_BLIP_SIZE,
+    RADAR_FALLBACK_BG, RADAR_VOID_COLOR
+} from '../constants';
 import { GameEngine } from '../core/game-engine';
 import { Level } from '../types';
 
@@ -23,11 +36,11 @@ export class Renderer {
         this.rctx = this.radarCanvas ? this.radarCanvas.getContext('2d') : null;
 
         // Initialize stars
-        for (let i = 0; i < 150; i++) {
+        for (let i = 0; i < STAR_COUNT; i++) {
             this.stars.push({
-                x: Math.random() * 2000,
-                y: Math.random() * 2000,
-                size: Math.random() * 2 + 0.5
+                x: Math.random() * STAR_FIELD_SPREAD,
+                y: Math.random() * STAR_FIELD_SPREAD,
+                size: Math.random() * STAR_SIZE_RANGE + STAR_MIN_SIZE
             });
         }
     }
@@ -106,7 +119,7 @@ export class Renderer {
 
         this.ctx.shadowColor = this.colors.caveWallEdge;
         this.ctx.strokeStyle = this.colors.caveWallEdge;
-        this.ctx.lineWidth = 2;
+        this.ctx.lineWidth = TERRAIN_LINE_WIDTH;
         this.ctx.stroke();
 
         this.ctx.restore();
@@ -116,13 +129,13 @@ export class Renderer {
         this.ctx.save();
 
         // Parallax effect: stars move slower than the camera
-        const px = -this.game.cameraX * 0.3;
-        const py = -this.game.cameraY * 0.3;
+        const px = -this.game.cameraX * STARFIELD_PARALLAX;
+        const py = -this.game.cameraY * STARFIELD_PARALLAX;
 
         this.ctx.translate(px, py);
         
         this.ctx.fillStyle = this.colors.starColor;
-        this.ctx.globalAlpha = 0.6;
+        this.ctx.globalAlpha = STAR_ALPHA;
 
         this.stars.forEach(s => {
             this.ctx.beginPath();
@@ -151,40 +164,39 @@ export class Renderer {
             this.ctx.rotate(f.rotation);
 
             const W = f.width;
-            const R = W * 0.8;           // housing radius
-            const cx = -R - W * 0.3;    // center of round housing, offset left from outlet
+            const R = W * FAN_HOUSING_RADIUS_RATIO;
+            const cx = -R - W * FAN_HOUSING_OFFSET_RATIO;
             const cy = 0;
 
             // --- Outlet duct walls ---
-            this.ctx.fillStyle = '#6B6E7A';
+            this.ctx.fillStyle = FAN_COLOR_DUCT;
             // Top wall
-            this.ctx.fillRect(cx + R * 0.6, -W / 2 - 6, -cx - R * 0.6, 6);
+            this.ctx.fillRect(cx + R * FAN_HOUSING_DUCT_JOIN, -W / 2 - FAN_DUCT_WALL_THICKNESS, -cx - R * FAN_HOUSING_DUCT_JOIN, FAN_DUCT_WALL_THICKNESS);
             // Bottom wall
-            this.ctx.fillRect(cx + R * 0.6, W / 2, -cx - R * 0.6, 6);
+            this.ctx.fillRect(cx + R * FAN_HOUSING_DUCT_JOIN, W / 2, -cx - R * FAN_HOUSING_DUCT_JOIN, FAN_DUCT_WALL_THICKNESS);
 
             // --- Housing body (filled circle) ---
-            this.ctx.fillStyle = '#5A5C68';
+            this.ctx.fillStyle = FAN_COLOR_HOUSING;
             this.ctx.beginPath();
             this.ctx.arc(cx, cy, R, 0, Math.PI * 2);
             this.ctx.fill();
 
             // --- Housing rim (stroke) ---
-            this.ctx.strokeStyle = '#9EA1AE';
-            this.ctx.lineWidth = 3;
+            this.ctx.strokeStyle = FAN_COLOR_RIM;
+            this.ctx.lineWidth = FAN_RIM_LINE_WIDTH;
             this.ctx.beginPath();
             this.ctx.arc(cx, cy, R, 0, Math.PI * 2);
             this.ctx.stroke();
 
             // --- Impeller blades ---
-            const numBlades = 7;
-            const innerR = R * 0.28;
-            const outerR = R * 0.82;
-            const spinAngle = (Date.now() / 150) % (Math.PI * 2); // spin ~4 RPM
-            this.ctx.strokeStyle = '#C0C3D0';
-            this.ctx.lineWidth = 2.5;
-            for (let i = 0; i < numBlades; i++) {
-                const angle = spinAngle + (i / numBlades) * Math.PI * 2;
-                const nextAngle = angle + 0.55; // forward-curved blade sweep
+            const innerR = R * FAN_BLADE_INNER_RATIO;
+            const outerR = R * FAN_BLADE_OUTER_RATIO;
+            const spinAngle = (Date.now() / FAN_SPIN_PERIOD_MS) % (Math.PI * 2);
+            this.ctx.strokeStyle = FAN_COLOR_BLADE;
+            this.ctx.lineWidth = FAN_BLADE_LINE_WIDTH;
+            for (let i = 0; i < FAN_BLADE_COUNT; i++) {
+                const angle = spinAngle + (i / FAN_BLADE_COUNT) * Math.PI * 2;
+                const nextAngle = angle + FAN_BLADE_SWEEP;
                 const x1 = cx + Math.cos(angle) * innerR;
                 const y1 = cy + Math.sin(angle) * innerR;
                 const x2 = cx + Math.cos(nextAngle) * outerR;
@@ -196,7 +208,7 @@ export class Renderer {
             }
 
             // --- Hub circle ---
-            this.ctx.fillStyle = '#9EA1AE';
+            this.ctx.fillStyle = FAN_COLOR_RIM;
             this.ctx.beginPath();
             this.ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
             this.ctx.fill();
@@ -209,10 +221,10 @@ export class Renderer {
         const color = this.colors.exitPortalColor;
         this.ctx.shadowColor = color;
         this.ctx.strokeStyle = color;
-        this.ctx.strokeRect(level.exit.x - 10, level.exit.y - 20, 20, 20);
+        this.ctx.strokeRect(level.exit.x - EXIT_HALF_WIDTH, level.exit.y - EXIT_HEIGHT, EXIT_HALF_WIDTH * 2, EXIT_HEIGHT);
         if (this.game.state === GameState.SUCCESS) {
             this.ctx.fillStyle = color;
-            this.ctx.fillRect(level.exit.x - 10, level.exit.y - 20, 20, 20);
+            this.ctx.fillRect(level.exit.x - EXIT_HALF_WIDTH, level.exit.y - EXIT_HEIGHT, EXIT_HALF_WIDTH * 2, EXIT_HEIGHT);
         }
     }
 
@@ -221,7 +233,7 @@ export class Renderer {
             const color = this.colors.podColor;
             this.ctx.shadowColor = color;
             this.ctx.fillStyle = color;
-            this.ctx.fillRect(this.game.pod.x - 10, this.game.pod.y - 10, 20, 20);
+            this.ctx.fillRect(this.game.pod.x - POD_HALF_SIZE, this.game.pod.y - POD_HALF_SIZE, POD_HALF_SIZE * 2, POD_HALF_SIZE * 2);
         }
     }
 
@@ -235,23 +247,23 @@ export class Renderer {
             this.ctx.rotate(this.game.ship.rotation);
 
             this.ctx.beginPath();
-            this.ctx.moveTo(0, -15);
-            this.ctx.lineTo(10, 10);
-            this.ctx.lineTo(-10, 10);
+            this.ctx.moveTo(0, SHIP_NOSE_Y);
+            this.ctx.lineTo(SHIP_WING_X, SHIP_WING_Y);
+            this.ctx.lineTo(-SHIP_WING_X, SHIP_WING_Y);
             this.ctx.closePath();
             this.ctx.fill();
 
             if (this.game.ship.cargo) {
                 this.ctx.fillStyle = this.colors.shipCargoColor;
-                this.ctx.fillRect(-3, -3, 6, 6);
+                this.ctx.fillRect(-SHIP_CARGO_HALF, -SHIP_CARGO_HALF, SHIP_CARGO_HALF * 2, SHIP_CARGO_HALF * 2);
             }
 
             if (this.game.ship.isThrusting && this.game.ship.fuel > 0) {
-                this.ctx.shadowBlur = 10;
+                this.ctx.shadowBlur = SHIP_THRUST_GLOW_BLUR;
                 this.ctx.beginPath();
-                this.ctx.moveTo(-5, 10);
-                this.ctx.lineTo(0, 25);
-                this.ctx.lineTo(5, 10);
+                this.ctx.moveTo(-SHIP_THRUST_TIP_X, SHIP_WING_Y);
+                this.ctx.lineTo(0, SHIP_THRUST_TIP_Y);
+                this.ctx.lineTo(SHIP_THRUST_TIP_X, SHIP_WING_Y);
                 this.ctx.fillStyle = this.colors.shipThrustColor;
                 this.ctx.fill();
             }
@@ -267,9 +279,9 @@ export class Renderer {
             this.ctx.translate(p.x, p.y);
             this.ctx.rotate(p.rotation);
             this.ctx.beginPath();
-            this.ctx.moveTo(0, -5);
-            this.ctx.lineTo(5, 5);
-            this.ctx.lineTo(-5, 5);
+            this.ctx.moveTo(0, -POD_HALF_SIZE / 2);
+            this.ctx.lineTo(POD_HALF_SIZE / 2, POD_HALF_SIZE / 2);
+            this.ctx.lineTo(-POD_HALF_SIZE / 2, POD_HALF_SIZE / 2);
             this.ctx.closePath();
             this.ctx.stroke();
             this.ctx.restore();
@@ -281,13 +293,13 @@ export class Renderer {
         this.rctx.clearRect(0, 0, this.radarCanvas.width, this.radarCanvas.height);
         
         // Fill radar background with rock Fill
-        this.rctx.fillStyle = this.colors.caveWallFill || '#1a1b24';
+        this.rctx.fillStyle = this.colors.caveWallFill || RADAR_FALLBACK_BG;
         this.rctx.fillRect(0, 0, this.radarCanvas.width, this.radarCanvas.height);
 
-        // Calculate dynamic scale to fit the entire level, with a 5% margin
+        // Calculate dynamic scale to fit the entire level, with a margin
         const targetScale = Math.min(
-            (this.radarCanvas.width * 0.9) / this.game.virtualWidth, 
-            (this.radarCanvas.height * 0.9) / this.game.virtualHeight
+            (this.radarCanvas.width * RADAR_MARGIN) / this.game.virtualWidth,
+            (this.radarCanvas.height * RADAR_MARGIN) / this.game.virtualHeight
         );
         const offsetX = (this.radarCanvas.width - this.game.virtualWidth * targetScale) / 2;
         const offsetY = (this.radarCanvas.height - this.game.virtualHeight * targetScale) / 2;
@@ -307,7 +319,7 @@ export class Renderer {
         this.rctx.clip();
         
         // Fill hallway with sky/void
-        this.rctx.fillStyle = '#050507'; // A dark sky color matching the game background
+        this.rctx.fillStyle = RADAR_VOID_COLOR;
         this.rctx.fillRect(0, 0, this.game.virtualWidth, this.game.virtualHeight);
         this.rctx.restore();
 
@@ -322,22 +334,24 @@ export class Renderer {
         this.rctx.stroke();
 
         // Ship
-        const pulse = (Math.sin(Date.now() / 200) + 1) / 2;
+        const pulse = (Math.sin(Date.now() / RADAR_PULSE_PERIOD_MS) + 1) / 2;
         this.rctx.fillStyle = this.colors.radarShipColor;
         this.rctx.globalAlpha = 0.5 + pulse * 0.5;
-        this.rctx.fillRect(this.game.ship.x - 2/targetScale, this.game.ship.y - 2/targetScale, 4/targetScale, 4/targetScale);
+        const blip = RADAR_BLIP_SIZE / targetScale;
+        this.rctx.fillRect(this.game.ship.x - blip / 2, this.game.ship.y - blip / 2, blip, blip);
         this.rctx.globalAlpha = 1.0;
 
         // Pod
         if (!this.game.pod.isCollected) {
             this.rctx.fillStyle = this.colors.radarPodColor;
-            this.rctx.fillRect(this.game.pod.x - 2/targetScale, this.game.pod.y - 2/targetScale, 4/targetScale, 4/targetScale);
+            this.rctx.fillRect(this.game.pod.x - blip / 2, this.game.pod.y - blip / 2, blip, blip);
         }
 
         // Exit
+        const exitBlip = RADAR_EXIT_BLIP_SIZE / targetScale;
         this.rctx.strokeStyle = this.colors.radarExitColor;
         this.rctx.lineWidth = 1 / targetScale;
-        this.rctx.strokeRect(level.exit.x - 3/targetScale, level.exit.y - 3/targetScale, 6/targetScale, 6/targetScale);
+        this.rctx.strokeRect(level.exit.x - exitBlip / 2, level.exit.y - exitBlip / 2, exitBlip, exitBlip);
 
         this.rctx.restore();
     }
