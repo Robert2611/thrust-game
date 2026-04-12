@@ -149,26 +149,56 @@ export class Renderer {
             this.ctx.save();
             this.ctx.translate(f.x, f.y);
             this.ctx.rotate(f.rotation);
-            
-            this.ctx.fillStyle = '#888A96'; // Industrial gray
+
+            const W = f.width;
+            const R = W * 0.8;           // housing radius
+            const cx = -R - W * 0.3;    // center of round housing, offset left from outlet
+            const cy = 0;
+
+            // --- Outlet duct walls ---
+            this.ctx.fillStyle = '#6B6E7A';
+            // Top wall
+            this.ctx.fillRect(cx + R * 0.6, -W / 2 - 6, -cx - R * 0.6, 6);
+            // Bottom wall
+            this.ctx.fillRect(cx + R * 0.6, W / 2, -cx - R * 0.6, 6);
+
+            // --- Housing body (filled circle) ---
+            this.ctx.fillStyle = '#5A5C68';
             this.ctx.beginPath();
-            
-            // Centrifugal blower geometry
-            const R = f.width * 0.7;
-            const cx = -f.width * 1.2;
-            const cy = f.width * 0.2;
-            
-            // The round body
             this.ctx.arc(cx, cy, R, 0, Math.PI * 2);
             this.ctx.fill();
 
-            // Tangential rectangular outlet (starts at center and ends at 0 so physics mapping remains accurate at local axis 0 boundary)
-            this.ctx.fillRect(cx, -f.width / 2, Math.abs(cx), f.width);
-
-            // Rotor center hole
-            this.ctx.fillStyle = this.colors.caveWallFill;
+            // --- Housing rim (stroke) ---
+            this.ctx.strokeStyle = '#9EA1AE';
+            this.ctx.lineWidth = 3;
             this.ctx.beginPath();
-            this.ctx.arc(cx, cy, R * 0.4, 0, Math.PI * 2);
+            this.ctx.arc(cx, cy, R, 0, Math.PI * 2);
+            this.ctx.stroke();
+
+            // --- Impeller blades ---
+            const numBlades = 7;
+            const innerR = R * 0.28;
+            const outerR = R * 0.82;
+            const spinAngle = (Date.now() / 150) % (Math.PI * 2); // spin ~4 RPM
+            this.ctx.strokeStyle = '#C0C3D0';
+            this.ctx.lineWidth = 2.5;
+            for (let i = 0; i < numBlades; i++) {
+                const angle = spinAngle + (i / numBlades) * Math.PI * 2;
+                const nextAngle = angle + 0.55; // forward-curved blade sweep
+                const x1 = cx + Math.cos(angle) * innerR;
+                const y1 = cy + Math.sin(angle) * innerR;
+                const x2 = cx + Math.cos(nextAngle) * outerR;
+                const y2 = cy + Math.sin(nextAngle) * outerR;
+                this.ctx.beginPath();
+                this.ctx.moveTo(x1, y1);
+                this.ctx.lineTo(x2, y2);
+                this.ctx.stroke();
+            }
+
+            // --- Hub circle ---
+            this.ctx.fillStyle = '#9EA1AE';
+            this.ctx.beginPath();
+            this.ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
             this.ctx.fill();
 
             this.ctx.restore();
