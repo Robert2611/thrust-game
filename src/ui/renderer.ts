@@ -1,6 +1,6 @@
 import { levels } from '../data/levels';
 import { GameState } from '../constants';
-import { GameEngine } from '../core/GameEngine';
+import { GameEngine } from '../core/game-engine';
 import { Level } from '../types';
 
 export class Renderer {

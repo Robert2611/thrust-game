@@ -1,7 +1,7 @@
-import { GameEngine } from './core/GameEngine';
-import { UIManager } from './ui/UIManager';
-import { InputHandler } from './ui/InputHandler';
-import { Renderer } from './ui/Renderer';
+import { GameEngine } from './core/game-engine';
+import { UIManager } from './ui/ui-manager';
+import { InputHandler } from './ui/input-handler';
+import { Renderer } from './ui/renderer';
 import { GameState } from './constants';
 
 class App {

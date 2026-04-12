@@ -1,15 +1,20 @@
-import { Ship } from '../models/Ship';
-import { Pod } from '../models/Pod';
-import { PhysicsEngine } from './PhysicsEngine';
+import { Ship } from '../models/ship';
+import { Pod } from '../models/pod';
+import { PhysicsEngine } from './physics-engine';
 import { levels } from '../data/levels';
 import { GameState, InputActions } from '../constants';
+import { ParticleSystem } from './particle-system';
 import { Particle, HUDUpdateCallback, StateChangeCallback, ExplosionCallback } from '../types';
 
 export class GameEngine {
     public physics: PhysicsEngine;
     public ship: Ship;
     public pod: Pod;
-    public particles: Particle[] = [];
+    public particleSystem: ParticleSystem;
+    
+    get particles(): Particle[] {
+        return this.particleSystem.getParticles();
+    }
     
     public state: GameState = GameState.MENU;
     public currentLevelIndex: number = 0;
@@ -29,7 +34,7 @@ export class GameEngine {
         this.physics = new PhysicsEngine();
         this.ship = new Ship();
         this.pod = new Pod();
-        this.particles = [];
+        this.particleSystem = new ParticleSystem();
         this.state = GameState.MENU;
 
         // Allow bypassing to a specific level via URL (e.g., ?level=3)
@@ -65,7 +70,7 @@ export class GameEngine {
 
         this.ship.reset(level.shipStart.x, level.shipStart.y, level.fuel);
         this.pod.reset(level.podStart.x, level.podStart.y, level.podStart.type);
-        this.particles = [];
+        this.particleSystem.clear();
         
         this.physics.gravity = level.gravity;
         this.physics.thrustStrength = 0.25;
@@ -83,14 +88,14 @@ export class GameEngine {
         if (this.ship.isExploded) {
             if (!this.ship.explosionTriggered) {
                 this.ship.explosionTriggered = true;
-                this.spawnExplosion();
+                this.particleSystem.spawnExplosion(this.ship.x, this.ship.y);
                 if (this.onExplosion) this.onExplosion();
             }
-            this.updateParticles();
+            this.particleSystem.update();
             return;
         }
 
-        this.updateParticles();
+        this.particleSystem.update();
         
         if (!this.ship.isOnPlatform) {
             if (this.ship.isRotatingLeft) this.ship.rotation -= this.physics.rotationSpeed;
@@ -155,24 +160,6 @@ export class GameEngine {
         }
     }
 
-    private spawnExplosion(): void {
-        for (let i = 0; i < 15; i++) {
-            this.particles.push({
-                x: this.ship.x, y: this.ship.y,
-                vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10,
-                rotation: Math.random() * Math.PI * 2,
-                rv: (Math.random() - 0.5) * 0.2, life: 1.0
-            });
-        }
-    }
-
-    private updateParticles(): void {
-        this.particles.forEach(p => {
-            p.x += p.vx; p.y += p.vy;
-            p.rotation += p.rv; p.life -= 0.01;
-        });
-        this.particles = this.particles.filter(p => p.life > 0);
-    }
 
     public nextLevel(): void {
         this.currentLevelIndex = (this.currentLevelIndex + 1) % levels.length;

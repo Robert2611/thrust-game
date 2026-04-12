@@ -1,5 +1,5 @@
 import { GameState, InputActions } from '../constants';
-import { GameEngine } from '../core/GameEngine';
+import { GameEngine } from '../core/game-engine';
 
 export class InputHandler {
     private game: GameEngine;
