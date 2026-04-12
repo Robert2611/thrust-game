@@ -47,12 +47,16 @@ export class PhysicsEngine {
                 const localY = -dx * s + dy * c;
                 
                 if (localX >= 0 && localX <= f.length && Math.abs(localY) <= f.width / 2) {
-                    const distanceFactor = 1 - (localX / f.length); // 1.0 at base, 0.0 at tip
-                    // Add acceleration instead of translation. Scale the speed param to a reliable force curve.
-                    const fanForce = f.speed * 0.1 * distanceFactor;
-                    
-                    ship.vx += c * fanForce;
-                    ship.vy += s * fanForce;
+                    // Wind speed target: how fast the air is moving along the fan axis.
+                    // The fan pushes the ship's velocity component towards this target (drag model).
+                    // This self-regulates: slow ships feel a strong push, fast ships barely feel it.
+                    const targetWindSpeed = f.speed;
+                    const currentAlongFan = ship.vx * c + ship.vy * s;
+                    const diff = targetWindSpeed - currentAlongFan;
+                    const force = diff * 0.08; // lerp strength — tweak for feel
+
+                    ship.vx += c * force;
+                    ship.vy += s * force;
                 }
             }
         }
