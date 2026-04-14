@@ -1,6 +1,6 @@
 import { Ship } from '../models/ship';
 import { Pod } from '../models/pod';
-import { Platform, Fan } from '../types';
+import { Platform, Fan, TerrainObject } from '../types';
 import { CollisionDetector } from './collision-detector';
 import {
     DEFAULT_GRAVITY, DEFAULT_FRICTION, DEFAULT_THRUST_STRENGTH,
@@ -22,7 +22,7 @@ export class PhysicsEngine {
         this.collisionDetector = new CollisionDetector();
     }
 
-    update(ship: Ship, _pod: Pod, terrain: number[], platforms: Platform[], fans: Fan[] = []): void {
+    update(ship: Ship, _pod: Pod, terrain: TerrainObject[], platforms: Platform[], fans: Fan[] = []): void {
         // 0. Disable physics if exploded or on platform (until thrusting)
         if (ship.isExploded) return;
 

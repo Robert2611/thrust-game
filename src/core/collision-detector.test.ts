@@ -22,7 +22,14 @@ describe('CollisionDetector', () => {
 
     it('should return DEATH on fatal terrain collision', () => {
         ship.reset(5, 5, 100);
-        const terrain = [0, 0, 10, 0, 10, 10];
+        const terrain = [{
+            type: 'polygon' as const,
+            points: [
+                { x: 0, y: 0 },
+                { x: 10, y: 0 },
+                { x: 10, y: 10 }
+            ]
+        }];
         const result = detector.checkAllCollisions(ship, terrain, []);
         expect(result).toBe('DEATH');
     });

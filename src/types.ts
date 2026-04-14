@@ -16,6 +16,10 @@ export interface Fan extends Point {
     speed: number;
 }
 
+export type TerrainObject =
+    | { type: 'polygon'; points: Point[]; isSolid?: boolean }
+    | { type: 'rect'; x: number; y: number; width: number; height: number; isSolid?: boolean };
+
 export interface Level {
     name: string;
     gravity: number;
@@ -25,7 +29,7 @@ export interface Level {
     exit: Point & { radius: number };
     platforms: Platform[];
     fans?: Fan[];
-    terrain: number[];
+    terrain: TerrainObject[];
 }
 
 export interface Particle extends Point {

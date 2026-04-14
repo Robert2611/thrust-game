@@ -1,12 +1,13 @@
 import { Ship } from '../models/ship';
-import { Platform } from '../types';
+import { Platform, TerrainObject } from '../types';
+import { getTerrainPolygons } from './terrain-utils';
 import {
     SHIP_HALF_HEIGHT, SHIP_COLLISION_RADIUS,
     PLATFORM_SNAP_TOLERANCE, LANDING_MAX_SPEED, LANDING_MAX_ANGLE
 } from '../constants';
 
 export class CollisionDetector {
-    public checkAllCollisions(obj: Ship, terrain: number[], platforms: Platform[]): 'LANDED' | 'DEATH' | 'NONE' {
+    public checkAllCollisions(obj: Ship, terrain: TerrainObject[], platforms: Platform[]): 'LANDED' | 'DEATH' | 'NONE' {
         // 1. Check Platforms (Safe zones)
         for (const p of platforms) {
             const shipBottomY = obj.y + SHIP_HALF_HEIGHT;
@@ -32,9 +33,18 @@ export class CollisionDetector {
         }
 
         // 2. Terrain Collision (Fatal walls)
-        for (let i = 0; i < terrain.length - 2; i += 2) {
-            if (this.lineCircleIntersection(terrain[i], terrain[i + 1], terrain[i + 2], terrain[i + 3], obj.x, obj.y, SHIP_COLLISION_RADIUS)) {
-                return 'DEATH';
+        const polygons = getTerrainPolygons(terrain);
+        for (const poly of polygons) {
+            const points = poly.points;
+            if (points.length < 2) continue;
+
+            for (let i = 0; i < points.length; i++) {
+                const p1 = points[i];
+                const p2 = points[(i + 1) % points.length]; // wraps around to close the loop
+                
+                if (this.lineCircleIntersection(p1.x, p1.y, p2.x, p2.y, obj.x, obj.y, SHIP_COLLISION_RADIUS)) {
+                    return 'DEATH';
+                }
             }
         }
 

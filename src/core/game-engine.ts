@@ -9,6 +9,7 @@ import {
 } from '../constants';
 import { ParticleSystem } from './particle-system';
 import { Particle, HUDUpdateCallback, StateChangeCallback, ExplosionCallback } from '../types';
+import { getTerrainPolygons } from './terrain-utils';
 
 export class GameEngine {
     public physics: PhysicsEngine;
@@ -65,10 +66,15 @@ export class GameEngine {
 
         let maxX = DEFAULT_VIRTUAL_WIDTH;
         let maxY = DEFAULT_VIRTUAL_HEIGHT;
-        for (let i = 0; i < level.terrain.length; i += 2) {
-            if (level.terrain[i] > maxX) maxX = level.terrain[i];
-            if (level.terrain[i+1] > maxY) maxY = level.terrain[i+1];
+
+        const polygons = getTerrainPolygons(level.terrain);
+        for (const poly of polygons) {
+            for (const p of poly.points) {
+                if (p.x > maxX) maxX = p.x;
+                if (p.y > maxY) maxY = p.y;
+            }
         }
+
         this.virtualWidth = maxX;
         this.virtualHeight = maxY;
 

@@ -14,7 +14,8 @@ import {
     RADAR_FALLBACK_BG, RADAR_VOID_COLOR
 } from '../constants';
 import { GameEngine } from '../core/game-engine';
-import { Level } from '../types';
+import { Level, TerrainObject } from '../types';
+import { getTerrainPolygons } from '../core/terrain-utils';
 
 export class Renderer {
     private game: GameEngine;
@@ -81,11 +82,12 @@ export class Renderer {
         // 2. Clear out the corridor and show stars inside it
         this.ctx.save();
         this.ctx.beginPath();
-        for (let i = 0; i < level.terrain.length; i += 2) {
-            if (i === 0) this.ctx.moveTo(level.terrain[i], level.terrain[i + 1]);
-            else this.ctx.lineTo(level.terrain[i], level.terrain[i + 1]);
+        const polygons = getTerrainPolygons(level.terrain);
+        for (const poly of polygons) {
+            if (!poly.isSolid) {
+                this.addPolygonPath(this.ctx, poly.points);
+            }
         }
-        this.ctx.closePath();
         this.ctx.clip();
 
         // Erase the rock we just painted over the whole screen,
@@ -108,19 +110,35 @@ export class Renderer {
         this.ctx.restore();
     }
 
-    private drawTerrain(level: Level): void {
-        this.ctx.save();
-        this.ctx.beginPath();
-        for (let i = 0; i < level.terrain.length; i += 2) {
-            if (i === 0) this.ctx.moveTo(level.terrain[i], level.terrain[i + 1]);
-            else this.ctx.lineTo(level.terrain[i], level.terrain[i + 1]);
+    private addPolygonPath(ctx: CanvasRenderingContext2D, points: { x: number, y: number }[]): void {
+        if (points.length < 2) return;
+        ctx.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+            ctx.lineTo(points[i].x, points[i].y);
         }
-        this.ctx.closePath();
+        ctx.closePath();
+    }
 
+    private drawTerrain(level: Level): void {
+        const polygons = getTerrainPolygons(level.terrain);
+        
+        // Draw the edges of the holes and the solid islands
+        this.ctx.save();
         this.ctx.shadowColor = this.colors.caveWallEdge;
         this.ctx.strokeStyle = this.colors.caveWallEdge;
         this.ctx.lineWidth = TERRAIN_LINE_WIDTH;
-        this.ctx.stroke();
+
+        for (const poly of polygons) {
+            this.ctx.beginPath();
+            this.addPolygonPath(this.ctx, poly.points);
+            
+            if (poly.isSolid) {
+                // If it's a solid island, we fill it with rock color to restore it
+                this.ctx.fillStyle = this.colors.caveWallFill;
+                this.ctx.fill();
+            }
+            this.ctx.stroke();
+        }
 
         this.ctx.restore();
     }
@@ -311,11 +329,12 @@ export class Renderer {
         // Clip out the hallway for the sky
         this.rctx.save();
         this.rctx.beginPath();
-        for (let i = 0; i < level.terrain.length; i += 2) {
-            if (i === 0) this.rctx.moveTo(level.terrain[i], level.terrain[i + 1]);
-            else this.rctx.lineTo(level.terrain[i], level.terrain[i + 1]);
+        const polygons = getTerrainPolygons(level.terrain);
+        for (const poly of polygons) {
+            if (!poly.isSolid) {
+                this.addPolygonPath(this.rctx, poly.points);
+            }
         }
-        this.rctx.closePath();
         this.rctx.clip();
         
         // Fill hallway with sky/void
@@ -323,15 +342,19 @@ export class Renderer {
         this.rctx.fillRect(0, 0, this.game.virtualWidth, this.game.virtualHeight);
         this.rctx.restore();
 
-        // Outline the boundary
+        // Outline the boundary and draw solid islands
         this.rctx.strokeStyle = this.colors.radarGridColor;
         this.rctx.lineWidth = 1 / targetScale; // visually maintain 1px
-        this.rctx.beginPath();
-        for (let i = 0; i < level.terrain.length; i += 2) {
-            if (i === 0) this.rctx.moveTo(level.terrain[i], level.terrain[i + 1]);
-            else this.rctx.lineTo(level.terrain[i], level.terrain[i + 1]);
+        
+        for (const poly of polygons) {
+            this.rctx.beginPath();
+            this.addPolygonPath(this.rctx, poly.points);
+            if (poly.isSolid) {
+                this.rctx.fillStyle = this.colors.caveWallFill || RADAR_FALLBACK_BG;
+                this.rctx.fill();
+            }
+            this.rctx.stroke();
         }
-        this.rctx.stroke();
 
         // Ship
         const pulse = (Math.sin(Date.now() / RADAR_PULSE_PERIOD_MS) + 1) / 2;

@@ -15,8 +15,15 @@ export const levels: Level[] = [
             { x: 100, y: 100, width: 80 }  // Exit platform
         ],
         terrain: [
-            0, 600, 200, 600, 300, 400, 500, 400, 600, 700, 900, 700, 1000, 500,
-            1000, 20, 800, 50, 400, 100, 0, 20, 0, 600
+            {
+                type: 'polygon',
+                points: [
+                    { x: 0, y: 600 }, { x: 200, y: 600 }, { x: 300, y: 400 },
+                    { x: 500, y: 400 }, { x: 600, y: 700 }, { x: 900, y: 700 },
+                    { x: 1000, y: 500 }, { x: 1000, y: 20 }, { x: 800, y: 50 },
+                    { x: 400, y: 100 }, { x: 0, y: 20 }
+                ]
+            }
         ]
     },
     {
@@ -31,9 +38,11 @@ export const levels: Level[] = [
             { x: 900, y: 750, width: 80 }
         ],
         terrain: [
-            0, 0, 1000, 0, 1000, 800, 0, 800,
-            0, 520, 750, 520, 750, 480, 0, 480,
-            0, 220, 750, 220, 750, 180, 0, 180, 0, 0
+            // The main cavern
+            { type: 'rect', x: 0, y: 0, width: 1000, height: 800 },
+            // Two solid shelves that constrict the passage
+            { type: 'rect', x: 0, y: 480, width: 750, height: 40, isSolid: true },
+            { type: 'rect', x: 0, y: 180, width: 750, height: 40, isSolid: true }
         ]
     },
     {
@@ -49,9 +58,15 @@ export const levels: Level[] = [
             { x: 900, y: 200, width: 80 }
         ],
         terrain: [
-            0, 200, 200, 200, 400, 950, 600, 950, 800, 200, 1000, 200,
-            1000, 50, 750, 50, 550, 750, 450, 750, 250, 50, 0, 50,
-            0, 200
+            {
+                type: 'polygon',
+                points: [
+                    { x: 0, y: 200 }, { x: 200, y: 200 }, { x: 400, y: 950 },
+                    { x: 600, y: 950 }, { x: 800, y: 200 }, { x: 1000, y: 200 },
+                    { x: 1000, y: 50 }, { x: 750, y: 50 }, { x: 550, y: 750 },
+                    { x: 450, y: 750 }, { x: 250, y: 50 }, { x: 0, y: 50 }
+                ]
+            }
         ]
     },
     {
@@ -66,11 +81,17 @@ export const levels: Level[] = [
             { x: 1400, y: 190, width: 80 }
         ],
         terrain: [
-            0, 190, 200, 190, 300, 290, 400, 190, 600, 290, 800, 140,
-            1000, 290, 1200, 190, 1500, 190,
-            1500, 0, 1200, 0, 1000, 100, 800, -50, 600, 100, 400, 0,
-            300, 100, 200, 0, 0, 0,
-            0, 190
+            {
+                type: 'polygon',
+                points: [
+                    { x: 0, y: 190 }, { x: 200, y: 190 }, { x: 300, y: 290 },
+                    { x: 400, y: 190 }, { x: 600, y: 290 }, { x: 800, y: 140 },
+                    { x: 1000, y: 290 }, { x: 1200, y: 190 }, { x: 1500, y: 190 },
+                    { x: 1500, y: 0 }, { x: 1200, y: 0 }, { x: 1000, y: 100 },
+                    { x: 800, y: -50 }, { x: 600, y: 100 }, { x: 400, y: 0 },
+                    { x: 300, y: 100 }, { x: 200, y: 0 }, { x: 0, y: 0 }
+                ]
+            }
         ]
     },
     {
@@ -89,15 +110,18 @@ export const levels: Level[] = [
             { x: 550, y: 700, width: 50, length: 400, rotation: -Math.PI / 2, speed: 7 }
         ],
         terrain: [
-            0, 600, 200, 600, 300, 700, 500, 700, 600, 700, 900, 700, 1000, 500,
-            400, 500, 400, 100, 250, 100, 0, 20, 0, 600
+            {
+                type: 'polygon',
+                points: [
+                    { x: 0, y: 600 }, { x: 200, y: 600 }, { x: 300, y: 700 },
+                    { x: 500, y: 700 }, { x: 600, y: 700 }, { x: 900, y: 700 },
+                    { x: 1000, y: 500 }, { x: 400, y: 500 }, { x: 400, y: 100 },
+                    { x: 250, y: 100 }, { x: 0, y: 20 }
+                ]
+            }
         ]
     },
     {
-        // H-shaped cave: lower room connected to upper room via a narrow shaft.
-        // Fan 1 (upward) lifts you through the shaft.
-        // Fan 2 (rightward) pushes you across the upper room to reach the pod.
-        // Return trip fights both fans.
         name: "CROSSWINDS",
         gravity: DEFAULT_GRAVITY,
         fuel: 600,
@@ -115,12 +139,16 @@ export const levels: Level[] = [
             // Rightward fan across the upper room
             { x: 100, y: 150, width: 50, length: 700, rotation: 0, speed: 3 },
         ],
-        // H-shape: shaft is 80px wide (x=260–340) to match Fan 1
         terrain: [
-            0, 750, 550, 750, 550, 400, 340, 400,
-            340, 250, 1000, 250, 1000, 50, 0, 50,
-            0, 250, 260, 250, 260, 400, 0, 400,
-            0, 750
+            {
+                type: 'polygon',
+                points: [
+                    { x: 0, y: 750 }, { x: 550, y: 750 }, { x: 550, y: 400 },
+                    { x: 340, y: 400 }, { x: 340, y: 250 }, { x: 1000, y: 250 },
+                    { x: 1000, y: 50 }, { x: 0, y: 50 }, { x: 0, y: 250 },
+                    { x: 260, y: 250 }, { x: 260, y: 400 }, { x: 0, y: 400 }
+                ]
+            }
         ]
     }
 ];
