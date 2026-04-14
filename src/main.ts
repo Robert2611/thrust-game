@@ -3,12 +3,14 @@ import { UIManager } from './ui/ui-manager';
 import { InputHandler } from './ui/input-handler';
 import { Renderer } from './ui/renderer';
 import { GameState } from './constants';
+import { LevelEditor } from './ui/level-editor';
 
 class App {
     private canvas: HTMLCanvasElement;
     private game: GameEngine;
     private _renderer: Renderer;
     private _ui: UIManager;
+    private _editor: LevelEditor;
 
     constructor() {
         const canvasElement = document.getElementById('game-canvas') as HTMLCanvasElement;
@@ -18,6 +20,7 @@ class App {
         this.game = new GameEngine();
         this._renderer = new Renderer(this.game, this.canvas);
         this._ui = new UIManager(this.game);
+        this._editor = new LevelEditor(this.game, this.canvas);
         new InputHandler(this.game);
 
         this.initResize();
@@ -72,9 +75,11 @@ class App {
     }
 
     private loop(): void {
-        this.game.update();
+        if (!this._editor.active) {
+            this.game.update();
+        }
         this.updateCamera();
-        this._renderer.draw();
+        this._renderer.draw(this._editor.active);
         requestAnimationFrame(() => this.loop());
     }
 }

@@ -94,3 +94,7 @@ export const RADAR_BLIP_SIZE = 4;            // blip size in world units (divide
 export const RADAR_EXIT_BLIP_SIZE = 6;
 export const RADAR_FALLBACK_BG = '#1a1b24';
 export const RADAR_VOID_COLOR = '#050507';
+
+// --- Level Editor ---
+export const EDITOR_GRID_SIZE = 10;
+export const EDITOR_POINT_RADIUS = 8;

@@ -11,7 +11,8 @@ import {
     FAN_COLOR_DUCT, FAN_COLOR_HOUSING, FAN_COLOR_RIM, FAN_COLOR_BLADE,
     FAN_RIM_LINE_WIDTH, FAN_BLADE_LINE_WIDTH,
     RADAR_MARGIN, RADAR_PULSE_PERIOD_MS, RADAR_BLIP_SIZE, RADAR_EXIT_BLIP_SIZE,
-    RADAR_FALLBACK_BG, RADAR_VOID_COLOR
+    RADAR_FALLBACK_BG, RADAR_VOID_COLOR,
+    EDITOR_POINT_RADIUS, EDITOR_GRID_SIZE
 } from '../constants';
 import { GameEngine } from '../core/game-engine';
 import { Level, TerrainObject } from '../types';
@@ -66,7 +67,7 @@ export class Renderer {
         };
     }
 
-    public draw(): void {
+    public draw(isEditMode: boolean = false): void {
         this.updateColors();
 
         // 1. Fill the viewport with rock color
@@ -106,6 +107,10 @@ export class Renderer {
         this.drawPod();
         this.drawShip();
         this.drawParticles();
+
+        if (isEditMode) {
+            this.drawEditorUI(level);
+        }
 
         this.ctx.restore();
     }
@@ -304,6 +309,26 @@ export class Renderer {
             this.ctx.stroke();
             this.ctx.restore();
         });
+    }
+
+    private drawEditorUI(level: Level): void {
+        this.ctx.save();
+        
+        const polygons = getTerrainPolygons(level.terrain);
+        
+        polygons.forEach(poly => {
+            poly.points.forEach(p => {
+                this.ctx.beginPath();
+                this.ctx.arc(p.x, p.y, EDITOR_POINT_RADIUS / 2, 0, Math.PI * 2);
+                this.ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
+                this.ctx.fill();
+                this.ctx.strokeStyle = '#fff';
+                this.ctx.lineWidth = 1;
+                this.ctx.stroke();
+            });
+        });
+        
+        this.ctx.restore();
     }
 
     private drawRadar(level: Level): void {
