@@ -77,8 +77,8 @@ class App {
     private loop(): void {
         if (!this._editor.active) {
             this.game.update();
+            this.updateCamera();
         }
-        this.updateCamera();
         this._renderer.draw(this._editor.active);
         requestAnimationFrame(() => this.loop());
     }

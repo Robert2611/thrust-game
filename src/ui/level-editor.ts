@@ -10,6 +10,8 @@ export class LevelEditor {
     
     private selectedPoint: { shapeIndex: number, pointIndex: number } | null = null;
     private isDragging: boolean = false;
+    private isPanning: boolean = false;
+    private lastMouseScreenPos: Point = { x: 0, y: 0 };
     
     private panel: HTMLElement | null = null;
     private exportOverlay: HTMLElement | null = null;
@@ -28,10 +30,11 @@ export class LevelEditor {
             this.panel.style.display = this.isActive ? 'flex' : 'none';
         }
         
-        // When activating, reset selection
+        // When activating, reset selection and camera state
         if (this.isActive) {
             this.selectedPoint = null;
             this.isDragging = false;
+            this.isPanning = false;
         }
     }
 
@@ -84,26 +87,39 @@ export class LevelEditor {
         }
         
         this.selectedPoint = null;
+        this.isPanning = true;
+        this.lastMouseScreenPos = { x: e.clientX, y: e.clientY };
     }
 
     private onMouseMove(e: MouseEvent): void {
-        if (!this.isActive || !this.isDragging || !this.selectedPoint) return;
-        
-        const mousePos = this.getMouseWorldPos(e);
-        const level = levels[this.game.currentLevelIndex];
-        const shape = level.terrain[this.selectedPoint.shapeIndex];
-        
-        if (shape.type === 'polygon') {
-            const point = shape.points[this.selectedPoint.pointIndex];
+        if (!this.isActive) return;
+
+        if (this.isDragging && this.selectedPoint) {
+            const mousePos = this.getMouseWorldPos(e);
+            const level = levels[this.game.currentLevelIndex];
+            const shape = level.terrain[this.selectedPoint.shapeIndex];
             
-            // Apply snap to grid
-            point.x = Math.round(mousePos.x / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
-            point.y = Math.round(mousePos.y / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
+            if (shape.type === 'polygon') {
+                const point = shape.points[this.selectedPoint.pointIndex];
+                
+                // Apply snap to grid
+                point.x = Math.round(mousePos.x / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
+                point.y = Math.round(mousePos.y / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
+            }
+        } else if (this.isPanning) {
+            const dx = e.clientX - this.lastMouseScreenPos.x;
+            const dy = e.clientY - this.lastMouseScreenPos.y;
+            
+            this.game.cameraX -= dx;
+            this.game.cameraY -= dy;
+            
+            this.lastMouseScreenPos = { x: e.clientX, y: e.clientY };
         }
     }
 
     private onMouseUp(): void {
         this.isDragging = false;
+        this.isPanning = false;
     }
 
     private createPanel(): void {
@@ -112,13 +128,26 @@ export class LevelEditor {
         this.panel.innerHTML = `
             <h3>LEVEL EDITOR</h3>
             <div class="editor-info">Mode: Polygon Edit</div>
-            <button id="export-btn">EXPORT CODE</button>
+            <div class="editor-actions">
+                <button id="export-btn">EXPORT CODE</button>
+                <button id="reset-cam-btn">RESET VIEW</button>
+            </div>
+            <div class="editor-hint">Drag handle to move point</div>
+            <div class="editor-hint">Drag space to pan camera</div>
             <div class="editor-hint">Alt+E to Toggle</div>
         `;
         document.body.appendChild(this.panel);
         this.panel.style.display = 'none';
 
         document.getElementById('export-btn')?.addEventListener('click', () => this.showExportDialog());
+        document.getElementById('reset-cam-btn')?.addEventListener('click', () => this.resetCamera());
+    }
+
+    private resetCamera(): void {
+        // Trigger the original camera positioning by temporarily toggling off the editor smoothing
+        // but for a dev tool, we can just snap it back to ship
+        this.game.cameraX = this.game.ship.x - this.canvas.width / 2;
+        this.game.cameraY = this.game.ship.y - this.canvas.height / 2;
     }
 
     private showExportDialog(): void {
