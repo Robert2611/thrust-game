@@ -189,14 +189,6 @@ export class LevelEditor {
     }
 
     private generateLevelCode(level: any): string {
-        const json = JSON.stringify(level, (key, value) => {
-            if (key === 'points' && Array.isArray(value)) {
-                // Keep points on one line for better readability
-                return value; 
-            }
-            return value;
-        }, 4);
-        
         // Post-process to fix point readability if needed, but for now we'll just return formatted JSON
         return `{\n    name: "${level.name}",\n    gravity: ${level.gravity},\n    fuel: ${level.fuel},\n    shipStart: ${JSON.stringify(level.shipStart)},\n    podStart: ${JSON.stringify(level.podStart)},\n    exit: ${JSON.stringify(level.exit)},\n    platforms: ${JSON.stringify(level.platforms, null, 12).replace(/"/g, '')},\n    fans: ${JSON.stringify(level.fans || [], null, 12).replace(/"/g, '')},\n    terrain: ${this.formatTerrain(level.terrain)}\n}`;
     }

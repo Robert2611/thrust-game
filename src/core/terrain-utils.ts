@@ -1,4 +1,4 @@
-import { Point, Platform, TerrainObject } from '../types';
+import { Point, TerrainObject } from '../types';
 
 /**
  * Normalizes various terrain objects into a standard polyline format (Point[])

@@ -12,10 +12,10 @@ import {
     FAN_RIM_LINE_WIDTH, FAN_BLADE_LINE_WIDTH,
     RADAR_MARGIN, RADAR_PULSE_PERIOD_MS, RADAR_BLIP_SIZE, RADAR_EXIT_BLIP_SIZE,
     RADAR_FALLBACK_BG, RADAR_VOID_COLOR,
-    EDITOR_POINT_RADIUS, EDITOR_GRID_SIZE
+    EDITOR_POINT_RADIUS
 } from '../constants';
 import { GameEngine } from '../core/game-engine';
-import { Level, TerrainObject } from '../types';
+import { Level } from '../types';
 import { getTerrainPolygons } from '../core/terrain-utils';
 
 export class Renderer {
