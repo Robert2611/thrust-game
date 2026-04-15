@@ -16,47 +16,51 @@ A high-fidelity 2D physics game inspired by the classic "Thrust". Navigate your 
 | :--- | :--- | :--- |
 | **Rotate** | `Left` / `Right` Arrow Keys | Left/Right Touch Zones |
 | **Thrust** | `Up` Arrow Key | Central "THRUST" Zone |
-| **Tractor Beam** | Automatically attaches when landing near the pod | Automatic |
+| **Level Editor** | `Alt + E` (Dev Mode) | N/A |
 
 ### Mechanics
 - **Physics**: Real-time Euler integration with gravity, thrust, inertia, and tethering.
 - **Traction**: Land near a pod to collect it.
-- **Fuel**: Every thrust consumes fuel. Don't run dry!
 - **Goal**: Navigate to the pod, collect it, and exit through the magenta portal.
 
 ---
 
-## 🛠️ Technical Overview
-The project is built with **TypeScript** and **Vite**, using a modular architecture for clean separation of concerns:
-- **Models**: `Ship.ts`, `Pod.ts` managing state.
-- **Core Logic**: `GameEngine.ts`, `PhysicsEngine.ts` (headless/testable).
-- **UI/IO**: `InputHandler.ts`, `UIManager.ts`, `Renderer.ts`.
-- **Bundling**: Powered by **Vite** for fast development and optimized production builds.
+## 🚀 Development & Local Setup
 
-## 🚀 Local Development
-
-To run the game locally for development:
-
-1. **Install dependencies**:
+### Installation
+1. **Clone the repo** and install dependencies:
    ```bash
    npm install
    ```
-
-2. **Start the development server**:
+2. **Start the dev server**:
    ```bash
    npm run dev
    ```
-   The game will be available at `http://localhost:5173`.
+   Open `http://localhost:5173` to play.
 
-## 📦 Deployment
+### 🛠️ Built-in Level Editor
+For developers, the game includes a robust visual level editor to modify terrain in real-time.
 
-The game is automatically deployed to **GitHub Pages** on every push to the `main` branch.
+- **Toggle Editor**: Press `Alt + E` to enter/exit Edit Mode.
+- **Edit Terrain**: Click and drag vertex handles (cyan dots) on polygon terrain. Points snap to a 10px grid.
+- **Pan View**: Click and drag on empty space to move the camera across the map.
+- **Export**: Click **"EXPORT CODE"** in the developer panel to generate formatted TypeScript for `src/data/levels.ts`.
 
 > [!IMPORTANT]
-> **Setup Requirement**:
-> Ensure your repository is configured to use **GitHub Actions** as the deployment source:
-> 1. Go to **Settings > Pages**.
-> 2. Under **Build and deployment > Source**, select **"GitHub Actions"**.
+> **Mandatory Build Check**: Before committing changes, always run `npm run build`. 
+> This project has strict TypeScript rules (`noUnusedLocals`) enabled, and a full compilation is required to pass the CI/CD deployment pipeline.
+
+---
+
+## 🛠️ Technical Overview
+Built with **TypeScript** and **Vite**, using a modular architecture:
+- **Models**: `Ship.ts`, `Pod.ts` (stateful entities).
+- **Core Engine**: `PhysicsEngine.ts`, `CollisionDetector.ts` (pure logic & testable).
+- **UI/Rendering**: `Renderer.ts`, `UIManager.ts`.
+- **Tests**: Comprehensive unit test suite with **Vitest**.
+
+## 📦 Deployment
+The game is automatically deployed to **GitHub Pages** via GitHub Actions on every push to `main`.
 
 ## 📜 License
-MIT License. Feel free to fork and improve!
+MIT License.

@@ -39,6 +39,12 @@ This applies to:
 - Array indices
 - String template literals
 
+### Mandatory Build Check
+
+**Every change must be verified by running `npm run build` (or `tsc`).**
+
+This project has strict TypeScript rules enabled (`noUnusedLocals`, `noUnusedParameters`). Running only the tests is **not sufficient**, as tests do not always trigger a full compilation. You must ensure the codebase compiles cleanly without warnings or errors before marking a task as complete.
+
 ---
 
 ## File Structure Reference
