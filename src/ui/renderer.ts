@@ -10,6 +10,7 @@ import {
     FAN_SPIN_PERIOD_MS, FAN_HOUSING_DUCT_JOIN,
     FAN_COLOR_DUCT, FAN_COLOR_HOUSING, FAN_COLOR_RIM, FAN_COLOR_BLADE,
     FAN_RIM_LINE_WIDTH, FAN_BLADE_LINE_WIDTH,
+    FAN_WIND_LINE_COUNT, FAN_WIND_DASH_LENGTH, FAN_WIND_GAP, FAN_WIND_COLOR,
     RADAR_MARGIN, RADAR_PULSE_PERIOD_MS, RADAR_BLIP_SIZE, RADAR_EXIT_BLIP_SIZE,
     RADAR_FALLBACK_BG, RADAR_VOID_COLOR,
     EDITOR_POINT_RADIUS
@@ -236,8 +237,44 @@ export class Renderer {
             this.ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
             this.ctx.fill();
 
+            // --- Wind Visualization ---
+            this.drawWind(f);
+
             this.ctx.restore();
         });
+    }
+
+    private drawWind(f: any): void {
+        const time = Date.now();
+        const totalGap = (FAN_WIND_DASH_LENGTH + FAN_WIND_GAP);
+        // Movement speed proportional to fan speed, significantly slowed down for visibility
+        const offset = (time * 0.05 * f.speed) % totalGap;
+        
+        this.ctx.strokeStyle = FAN_WIND_COLOR;
+        this.ctx.lineWidth = 1.5;
+
+        for (let i = 0; i < FAN_WIND_LINE_COUNT; i++) {
+            // Distribute lines across the width of the fan
+            const y = (i / (FAN_WIND_LINE_COUNT - 1) - 0.5) * f.width * 0.8;
+            
+            // Draw dashes along the length
+            for (let xBase = offset - totalGap; xBase < f.length; xBase += totalGap) {
+                const xStart = Math.max(0, xBase);
+                const xEnd = Math.min(f.length, xBase + FAN_WIND_DASH_LENGTH);
+                
+                if (xEnd > xStart) {
+                    const alphaStart = 1.0 - (xStart / f.length);
+                    
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(xStart, y);
+                    this.ctx.lineTo(xEnd, y);
+                    
+                    this.ctx.globalAlpha = alphaStart;
+                    this.ctx.stroke();
+                }
+            }
+        }
+        this.ctx.globalAlpha = 1.0;
     }
 
     private drawExit(level: Level): void {

@@ -86,6 +86,10 @@ export const FAN_RIM_LINE_WIDTH = 3;
 export const FAN_BLADE_LINE_WIDTH = 2.5;
 export const FAN_TONGUE_RATIO = 0.14;        // tongue size relative to fan width
 export const FAN_DUCT_STUB_RATIO = 1.2;      // duct stub length = R + W * this
+export const FAN_WIND_LINE_COUNT = 5;
+export const FAN_WIND_DASH_LENGTH = 15;
+export const FAN_WIND_GAP = 25;
+export const FAN_WIND_COLOR = 'rgba(255, 255, 255, 0.5)';
 
 // --- Renderer: Radar ---
 export const RADAR_MARGIN = 0.9;             // fraction of radar canvas used (rest is border)
