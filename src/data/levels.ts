@@ -123,10 +123,10 @@ export const levels: Level[] = [
     },
     {
         name: "CROSSWINDS",
-        gravity: 0.1,
+        gravity: DEFAULT_GRAVITY,
         fuel: 600,
         shipStart: { "x": 100, "y": 740 },
-        podStart: { "x": 540, "y": 240, "type": "QUANTUM FUEL" },
+        podStart: { "x": 540, "y": 240, "type": CargoType.QUANTUM_FUEL },
         exit: { "x": 100, "y": 250, "radius": 40 },
         platforms: [
             {

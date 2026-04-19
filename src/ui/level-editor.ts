@@ -46,7 +46,7 @@ export class LevelEditor {
     public toggle(): void {
         this.isActive = !this.isActive;
         if (this.panel) {
-            this.panel.style.display = this.isActive ? 'flex' : 'none';
+            this.panel.style.display = this.isActive ? 'block' : 'none';
         }
         
         // When activating, reset selection and camera state

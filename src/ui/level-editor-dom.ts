@@ -85,12 +85,14 @@ function createSectionLabel(text: string): HTMLSpanElement {
 
 export function createEditorPanel(): EditorPanelElements {
     const panel = createElement('div') as HTMLDivElement;
-    panel.id = 'editor-panel';
+    panel.id = 'editor-ui';
+
+    const toolsPanel = createElement('div', 'editor-panel-card') as HTMLDivElement;
+    toolsPanel.id = 'editor-tools-panel';
 
     const heading = createElement('h3', undefined, 'LEVEL EDITOR');
-    panel.appendChild(heading);
-
-    panel.appendChild(createElement('div', 'editor-info', 'Mode: Hybrid Edit'));
+    toolsPanel.appendChild(heading);
+    toolsPanel.appendChild(createElement('div', 'editor-info', 'Mode: Hybrid Edit'));
 
     const addSection = createElement('div', 'editor-section');
     addSection.appendChild(createSectionLabel('ADD ENTITY:'));
@@ -105,16 +107,7 @@ export function createEditorPanel(): EditorPanelElements {
     addFanButton.style.opacity = '0.5';
     addActions.append(addPolygonButton, addFanButton);
     addSection.appendChild(addActions);
-    panel.appendChild(addSection);
-
-    const inspectorSection = createElement('div', 'editor-section') as HTMLDivElement;
-    inspectorSection.id = 'inspector-section';
-    inspectorSection.style.display = 'none';
-    inspectorSection.appendChild(createSectionLabel('PROPERTIES:'));
-    const inspectorContent = createElement('div') as HTMLDivElement;
-    inspectorContent.id = 'inspector-content';
-    inspectorSection.appendChild(inspectorContent);
-    panel.appendChild(inspectorSection);
+    toolsPanel.appendChild(addSection);
 
     const projectSection = createElement('div', 'editor-section');
     projectSection.appendChild(createSectionLabel('PROJECT:'));
@@ -127,15 +120,30 @@ export function createEditorPanel(): EditorPanelElements {
     resetCameraButton.textContent = 'RESET VIEW';
     projectActions.append(exportButton, resetCameraButton);
     projectSection.appendChild(projectActions);
-    panel.appendChild(projectSection);
+    toolsPanel.appendChild(projectSection);
+
+    const inspectorSection = createElement('div', 'editor-panel-card') as HTMLDivElement;
+    inspectorSection.id = 'inspector-section';
+    inspectorSection.style.display = 'none';
+    const inspectorTitle = createElement('h3', undefined, 'PROPERTIES');
+    inspectorSection.appendChild(inspectorTitle);
+    const inspectorContent = createElement('div') as HTMLDivElement;
+    inspectorContent.id = 'inspector-content';
+    inspectorSection.appendChild(inspectorContent);
+
+    const helpPanel = createElement('div', 'editor-panel-card') as HTMLDivElement;
+    helpPanel.id = 'editor-help-panel';
+    helpPanel.appendChild(createElement('h3', undefined, 'HELP'));
 
     for (const line of HINT_LINES) {
         const hint = createElement('div', 'editor-hint') as HTMLDivElement;
         const action = createElement('b', undefined, line.action);
         hint.appendChild(action);
         hint.appendChild(document.createTextNode(`: ${line.description}`));
-        panel.appendChild(hint);
+        helpPanel.appendChild(hint);
     }
+
+    panel.append(toolsPanel, inspectorSection, helpPanel);
 
     return {
         panel,
