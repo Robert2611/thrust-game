@@ -39,6 +39,11 @@ export class InputHandler {
     }
 
     private handleKey(e: KeyboardEvent, isDown: boolean): void {
+        // Ignore game input if we are typing in a text field or numeric input
+        if (document.activeElement instanceof HTMLInputElement || document.activeElement instanceof HTMLTextAreaElement) {
+            return;
+        }
+
         if (this.game.state === GameState.MENU && isDown) {
             if (e.code === 'Enter') this.game.startLevel();
         }

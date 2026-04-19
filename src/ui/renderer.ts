@@ -17,19 +17,22 @@ import {
 import { GameEngine } from '../core/game-engine';
 import { Level } from '../types';
 import { getTerrainPolygons } from '../core/terrain-utils';
+import { LevelEditor } from './level-editor';
 
 export class Renderer {
     private game: GameEngine;
     private canvas: HTMLCanvasElement;
     private ctx: CanvasRenderingContext2D;
+    private editor: LevelEditor;
     private radarCanvas: HTMLCanvasElement | null;
     private rctx: CanvasRenderingContext2D | null;
     private colors: { [key: string]: string } = {};
     private stars: { x: number, y: number, size: number }[] = [];
 
-    constructor(gameEngine: GameEngine, canvas: HTMLCanvasElement) {
+    constructor(gameEngine: GameEngine, canvas: HTMLCanvasElement, editor: LevelEditor) {
         this.game = gameEngine;
         this.canvas = canvas;
+        this.editor = editor;
         const context = canvas.getContext('2d');
         if (!context) throw new Error("Could not get 2D context");
         this.ctx = context;
@@ -350,44 +353,58 @@ export class Renderer {
     private drawEditorUI(level: Level): void {
         this.ctx.save();
         
+        const selected = this.editor.selectedItem;
+
         // 1. Terrain Handles (Cyan) - Small squares for vertices
         const polygons = getTerrainPolygons(level.terrain);
-        polygons.forEach(poly => {
-            poly.points.forEach(p => this.drawBoxHandle(p.x, p.y, 6, 6, '#00ffff'));
+        polygons.forEach((poly, s) => {
+            poly.points.forEach((p, v) => {
+                const isSelected = selected?.type === 'vertex' && selected.shapeIndex === s && selected.pointIndex === v;
+                this.drawBoxHandle(p.x, p.y, 6, 6, '#00ffff', isSelected);
+            });
         });
 
         // 2. Ship Start Handle (Green) - Ship footprint
+        const isShipSelected = selected?.type === 'ship';
         this.drawBoxHandle(
             level.shipStart.x, 
             level.shipStart.y + (SHIP_WING_Y + SHIP_NOSE_Y) / 2,
             SHIP_WING_X * 2, 
             SHIP_WING_Y - SHIP_NOSE_Y, 
-            '#00ff00'
+            '#00ff00',
+            isShipSelected
         );
 
         // 3. Pod Start Handle (Blue) - Pod size
-        this.drawBoxHandle(level.podStart.x, level.podStart.y, POD_HALF_SIZE * 2, POD_HALF_SIZE * 2, '#00aaff');
+        const isPodSelected = selected?.type === 'pod';
+        this.drawBoxHandle(level.podStart.x, level.podStart.y, POD_HALF_SIZE * 2, POD_HALF_SIZE * 2, '#00aaff', isPodSelected);
 
         // 4. Exit Handle (Magenta) - Exit size
+        const isExitSelected = selected?.type === 'exit';
         this.drawBoxHandle(
             level.exit.x, 
             level.exit.y - EXIT_HEIGHT / 2, 
             EXIT_HALF_WIDTH * 2, 
             EXIT_HEIGHT, 
-            '#ff00ff'
+            '#ff00ff',
+            isExitSelected
         );
 
         // 5. Platform Handles (Yellow) - Platform width
-        level.platforms.forEach(p => this.drawBoxHandle(p.x, p.y, p.width, 4, '#ffff00'));
+        level.platforms.forEach((p, i) => {
+            const isSelected = selected?.type === 'platform' && selected.index === i;
+            this.drawBoxHandle(p.x, p.y, p.width, 4, '#ffff00', isSelected);
+        });
 
         // 6. Fan Handles (Orange) - Fan size (aligned with rotation)
         if (level.fans) {
-            level.fans.forEach(f => {
+            level.fans.forEach((f, i) => {
+                const isSelected = selected?.type === 'fan' && selected.index === i;
                 this.ctx.save();
                 this.ctx.translate(f.x, f.y);
                 this.ctx.rotate(f.rotation);
                 // Draw box for fan length and width
-                this.drawBoxHandle(f.length / 2, 0, f.length, f.width, '#ff8800');
+                this.drawBoxHandle(f.length / 2, 0, f.length, f.width, '#ff8800', isSelected);
                 this.ctx.restore();
             });
         }
@@ -395,23 +412,26 @@ export class Renderer {
         this.ctx.restore();
     }
 
-    private drawBoxHandle(x: number, y: number, w: number, h: number, color: string): void {
+    private drawBoxHandle(x: number, y: number, w: number, h: number, color: string, isSelected: boolean = false): void {
         this.ctx.save();
         this.ctx.translate(x, y);
         this.ctx.beginPath();
         this.ctx.rect(-w / 2, -h / 2, w, h);
+        
         this.ctx.fillStyle = color;
-        this.ctx.globalAlpha = 0.3; // More transparent for boxes
+        this.ctx.globalAlpha = isSelected ? 0.5 : 0.2;
         this.ctx.fill();
-        this.ctx.strokeStyle = color;
-        this.ctx.globalAlpha = 0.8;
-        this.ctx.lineWidth = 1;
+        
+        this.ctx.strokeStyle = isSelected ? '#fff' : color;
+        this.ctx.globalAlpha = isSelected ? 1.0 : 0.6;
+        this.ctx.lineWidth = isSelected ? 2 : 1;
         this.ctx.stroke();
         
         // Add a small center pivot dot to help with clicking
         this.ctx.beginPath();
         this.ctx.arc(0, 0, 3, 0, Math.PI * 2);
-        this.ctx.fillStyle = '#fff';
+        this.ctx.fillStyle = isSelected ? '#fff' : color;
+        this.ctx.globalAlpha = 1.0;
         this.ctx.fill();
         
         this.ctx.restore();

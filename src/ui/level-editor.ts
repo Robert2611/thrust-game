@@ -8,12 +8,14 @@ export class LevelEditor {
     private canvas: HTMLCanvasElement;
     private isActive: boolean = false;
     
-    private selectedItem: { 
+    public selectedItem: { 
         type: 'vertex' | 'ship' | 'pod' | 'exit' | 'platform' | 'fan', 
         shapeIndex?: number, 
         pointIndex?: number,
         index?: number 
     } | null = null;
+    public get currentLevel() { return levels[this.game.currentLevelIndex]; }
+
     private dragOffset: Point = { x: 0, y: 0 };
     private isDragging: boolean = false;
     private isPanning: boolean = false;
@@ -199,6 +201,7 @@ export class LevelEditor {
         this.selectedItem = null;
         this.isPanning = true;
         this.lastMouseScreenPos = { x: e.clientX, y: e.clientY };
+        this.updateInspector();
     }
 
     private dist(p1: Point, p2: Point): number {
@@ -253,8 +256,11 @@ export class LevelEditor {
     }
 
     private onMouseUp(): void {
-        this.isDragging = false;
-        this.isPanning = false;
+        if (this.isDragging || this.isPanning) {
+            this.isDragging = false;
+            this.isPanning = false;
+            this.updateInspector();
+        }
     }
 
     private distToSegment(p: Point, a: Point, b: Point): number {
@@ -283,6 +289,11 @@ export class LevelEditor {
                 </div>
             </div>
 
+            <div id="inspector-section" class="editor-section" style="display: none;">
+                <span>PROPERTIES:</span>
+                <div id="inspector-content"></div>
+            </div>
+
             <div class="editor-section">
                 <span>PROJECT:</span>
                 <div class="editor-actions">
@@ -303,6 +314,83 @@ export class LevelEditor {
         document.getElementById('add-poly-btn')?.addEventListener('click', () => this.addPolygon());
         document.getElementById('export-btn')?.addEventListener('click', () => this.showExportDialog());
         document.getElementById('reset-cam-btn')?.addEventListener('click', () => this.resetCamera());
+    }
+
+    private updateInspector(): void {
+        const section = document.getElementById('inspector-section');
+        const content = document.getElementById('inspector-content');
+        if (!section || !content) return;
+
+        if (!this.selectedItem) {
+            section.style.display = 'none';
+            return;
+        }
+
+        section.style.display = 'block';
+        content.innerHTML = ''; // Clear
+
+        const level = levels[this.game.currentLevelIndex];
+        
+        if (this.selectedItem.type === 'fan') {
+            const fan = (level.fans || [])[this.selectedItem.index!];
+            if (!fan) return;
+
+            content.innerHTML = `
+                <div class="prop-row">
+                    <label>Rot (deg)</label>
+                    <input type="range" id="prop-rot" min="0" max="360" value="${Math.round(fan.rotation * 180 / Math.PI)}">
+                </div>
+                <div class="prop-row">
+                    <label>Length</label>
+                    <input type="number" id="prop-len" value="${fan.length}" step="10">
+                </div>
+                <div class="prop-row">
+                    <label>Width</label>
+                    <input type="number" id="prop-wid" value="${fan.width}" step="5">
+                </div>
+                <div class="prop-row">
+                    <label>Speed</label>
+                    <input type="number" id="prop-spd" value="${fan.speed}" step="0.5">
+                </div>
+            `;
+
+            document.getElementById('prop-rot')?.addEventListener('input', (e) => {
+                fan.rotation = (e.target as HTMLInputElement).valueAsNumber * Math.PI / 180;
+            });
+            document.getElementById('prop-len')?.addEventListener('input', (e) => {
+                fan.length = (e.target as HTMLInputElement).valueAsNumber;
+            });
+            document.getElementById('prop-wid')?.addEventListener('input', (e) => {
+                fan.width = (e.target as HTMLInputElement).valueAsNumber;
+            });
+            document.getElementById('prop-spd')?.addEventListener('input', (e) => {
+                fan.speed = (e.target as HTMLInputElement).valueAsNumber;
+            });
+        } else if (this.selectedItem.type === 'platform') {
+            const plat = level.platforms[this.selectedItem.index!];
+            content.innerHTML = `
+                <div class="prop-row">
+                    <label>Width</label>
+                    <input type="number" id="prop-wid" value="${plat.width}" step="10">
+                </div>
+            `;
+            document.getElementById('prop-wid')?.addEventListener('input', (e) => {
+                plat.width = (e.target as HTMLInputElement).valueAsNumber;
+            });
+        } else if (this.selectedItem.type === 'vertex') {
+            const shape = level.terrain[this.selectedItem.shapeIndex!];
+            content.innerHTML = `
+                <div class="prop-row">
+                    <label>Solid</label>
+                    <input type="checkbox" id="prop-solid" ${shape.isSolid ? 'checked' : ''}>
+                </div>
+            `;
+            document.getElementById('prop-solid')?.addEventListener('change', (e) => {
+                shape.isSolid = (e.target as HTMLInputElement).checked;
+            });
+        } else {
+            content.innerHTML = `<div class="prop-row"><span>Entity: ${this.selectedItem.type.toUpperCase()}</span></div>`;
+        }
     }
 
     private addPolygon(): void {
