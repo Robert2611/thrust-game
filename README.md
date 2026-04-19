@@ -39,12 +39,23 @@ A high-fidelity 2D physics game inspired by the classic "Thrust". Navigate your 
    Open `http://localhost:5173` to play.
 
 ### 🛠️ Built-in Level Editor
-For developers, the game includes a robust visual level editor to modify terrain in real-time.
+For developers, the game includes a robust visual level editor to modify terrain and entity layouts in real-time.
 
 - **Toggle Editor**: Press `Alt + E` to enter/exit Edit Mode.
-- **Edit Terrain**: Click and drag vertex handles (cyan dots) on polygon terrain. Points snap to a 10px grid.
-- **Pan View**: Click and drag on empty space to move the camera across the map.
-- **Export**: Click **"EXPORT CODE"** in the developer panel to generate formatted TypeScript for `src/data/levels.ts`.
+- **Universal Dragging**: Click and drag any handle to reposition items. All items snap to a 10px grid.
+  - 🟢 **Green**: Ship Start
+  - 🔵 **Blue**: Pod Start
+  - 🟣 **Magenta**: Exit Portal
+  - 🟡 **Yellow**: Platforms
+  - 🟠 **Orange**: Fans
+  - 🔵 **Cyan**: Terrain Polygon Vertices
+- **Geometric Editing**:
+  - **Add Vertex**: Click on any terrain line segment to split it and insert a new point.
+  - **Remove Vertex**: `Ctrl + Click` a cyan vertex handle.
+  - **Delete Entity/Shape**: `Ctrl + Shift + Click` any handle to remove the entire object (Fan, Platform, or Polygon).
+- **Creation**: Use the **"ADD POLYGON"** button to spawn new terrain shapes.
+- **Pan View**: Click and drag on empty background space to move the camera.
+- **Export**: Click **"EXPORT CODE"** to generate formatted TypeScript for `src/data/levels.ts`.
 
 > [!IMPORTANT]
 > **Mandatory Build Check**: Before committing changes, always run `npm run build`. 
