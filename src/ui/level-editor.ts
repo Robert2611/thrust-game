@@ -8,7 +8,12 @@ export class LevelEditor {
     private canvas: HTMLCanvasElement;
     private isActive: boolean = false;
     
-    private selectedPoint: { shapeIndex: number, pointIndex: number } | null = null;
+    private selectedItem: { 
+        type: 'vertex' | 'ship' | 'pod' | 'exit' | 'platform' | 'fan', 
+        shapeIndex?: number, 
+        pointIndex?: number,
+        index?: number 
+    } | null = null;
     private isDragging: boolean = false;
     private isPanning: boolean = false;
     private lastMouseScreenPos: Point = { x: 0, y: 0 };
@@ -32,7 +37,7 @@ export class LevelEditor {
         
         // When activating, reset selection and camera state
         if (this.isActive) {
-            this.selectedPoint = null;
+            this.selectedItem = null;
             this.isDragging = false;
             this.isPanning = false;
         }
@@ -68,17 +73,61 @@ export class LevelEditor {
         
         const mousePos = this.getMouseWorldPos(e);
         const level = levels[this.game.currentLevelIndex];
+        const hitRadius = EDITOR_POINT_RADIUS * 1.5;
         
-        // Hit-test polygon points
+        // 1. Hit-test Ship Start
+        if (this.dist(mousePos, level.shipStart) < hitRadius) {
+            this.selectedItem = { type: 'ship' };
+            this.isDragging = true;
+            return;
+        }
+
+        // 2. Hit-test Pod Start
+        if (this.dist(mousePos, level.podStart) < hitRadius) {
+            this.selectedItem = { type: 'pod' };
+            this.isDragging = true;
+            return;
+        }
+
+        // 3. Hit-test Exit
+        if (this.dist(mousePos, level.exit) < hitRadius) {
+            this.selectedItem = { type: 'exit' };
+            this.isDragging = true;
+            return;
+        }
+
+        // 4. Hit-test Platforms
+        for (let i = 0; i < level.platforms.length; i++) {
+            if (this.dist(mousePos, level.platforms[i]) < hitRadius) {
+                this.selectedItem = { type: 'platform', index: i };
+                this.isDragging = true;
+                return;
+            }
+        }
+
+        // 5. Hit-test Fans
+        const fans = level.fans || [];
+        for (let i = 0; i < fans.length; i++) {
+            const f = fans[i];
+            // The visual handle is at the center of the fan's range
+            const handleX = f.x + Math.cos(f.rotation) * (f.length / 2);
+            const handleY = f.y + Math.sin(f.rotation) * (f.length / 2);
+            
+            if (this.dist(mousePos, { x: handleX, y: handleY }) < hitRadius) {
+                this.selectedItem = { type: 'fan', index: i };
+                this.isDragging = true;
+                return;
+            }
+        }
+        
+        // 6. Hit-test Polygon vertices
         for (let s = 0; s < level.terrain.length; s++) {
             const shape = level.terrain[s];
             if (shape.type === 'polygon') {
                 for (let p = 0; p < shape.points.length; p++) {
                     const point = shape.points[p];
-                    const dist = Math.sqrt((point.x - mousePos.x) ** 2 + (point.y - mousePos.y) ** 2);
-                    
-                    if (dist < EDITOR_POINT_RADIUS * 1.5) {
-                        this.selectedPoint = { shapeIndex: s, pointIndex: p };
+                    if (this.dist(mousePos, point) < hitRadius) {
+                        this.selectedItem = { type: 'vertex', shapeIndex: s, pointIndex: p };
                         this.isDragging = true;
                         return;
                     }
@@ -86,25 +135,49 @@ export class LevelEditor {
             }
         }
         
-        this.selectedPoint = null;
+        this.selectedItem = null;
         this.isPanning = true;
         this.lastMouseScreenPos = { x: e.clientX, y: e.clientY };
+    }
+
+    private dist(p1: Point, p2: Point): number {
+        return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
     }
 
     private onMouseMove(e: MouseEvent): void {
         if (!this.isActive) return;
 
-        if (this.isDragging && this.selectedPoint) {
+        if (this.isDragging && this.selectedItem) {
             const mousePos = this.getMouseWorldPos(e);
             const level = levels[this.game.currentLevelIndex];
-            const shape = level.terrain[this.selectedPoint.shapeIndex];
             
-            if (shape.type === 'polygon') {
-                const point = shape.points[this.selectedPoint.pointIndex];
-                
-                // Apply snap to grid
-                point.x = Math.round(mousePos.x / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
-                point.y = Math.round(mousePos.y / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
+            let target: Point | null = null;
+
+            switch (this.selectedItem.type) {
+                case 'ship': 
+                    target = level.shipStart; 
+                    this.game.ship.x = Math.round(mousePos.x / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
+                    this.game.ship.y = Math.round(mousePos.y / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
+                    break;
+                case 'pod': 
+                    target = level.podStart; 
+                    this.game.pod.x = Math.round(mousePos.x / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
+                    this.game.pod.y = Math.round(mousePos.y / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
+                    break;
+                case 'exit': target = level.exit; break;
+                case 'platform': target = level.platforms[this.selectedItem.index!]; break;
+                case 'fan': target = (level.fans || [])[this.selectedItem.index!]; break;
+                case 'vertex': 
+                    const shape = level.terrain[this.selectedItem.shapeIndex!];
+                    if (shape.type === 'polygon') {
+                        target = shape.points[this.selectedItem.pointIndex!];
+                    }
+                    break;
+            }
+
+            if (target) {
+                target.x = Math.round(mousePos.x / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
+                target.y = Math.round(mousePos.y / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
             }
         } else if (this.isPanning) {
             const dx = e.clientX - this.lastMouseScreenPos.x;

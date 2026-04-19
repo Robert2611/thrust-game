@@ -12,8 +12,7 @@ import {
     FAN_RIM_LINE_WIDTH, FAN_BLADE_LINE_WIDTH,
     FAN_WIND_LINE_COUNT, FAN_WIND_DASH_LENGTH, FAN_WIND_GAP, FAN_WIND_COLOR,
     RADAR_MARGIN, RADAR_PULSE_PERIOD_MS, RADAR_BLIP_SIZE, RADAR_EXIT_BLIP_SIZE,
-    RADAR_FALLBACK_BG, RADAR_VOID_COLOR,
-    EDITOR_POINT_RADIUS
+    RADAR_FALLBACK_BG, RADAR_VOID_COLOR
 } from '../constants';
 import { GameEngine } from '../core/game-engine';
 import { Level } from '../types';
@@ -351,19 +350,69 @@ export class Renderer {
     private drawEditorUI(level: Level): void {
         this.ctx.save();
         
+        // 1. Terrain Handles (Cyan) - Small squares for vertices
         const polygons = getTerrainPolygons(level.terrain);
-        
         polygons.forEach(poly => {
-            poly.points.forEach(p => {
-                this.ctx.beginPath();
-                this.ctx.arc(p.x, p.y, EDITOR_POINT_RADIUS / 2, 0, Math.PI * 2);
-                this.ctx.fillStyle = 'rgba(0, 255, 255, 0.7)';
-                this.ctx.fill();
-                this.ctx.strokeStyle = '#fff';
-                this.ctx.lineWidth = 1;
-                this.ctx.stroke();
-            });
+            poly.points.forEach(p => this.drawBoxHandle(p.x, p.y, 6, 6, '#00ffff'));
         });
+
+        // 2. Ship Start Handle (Green) - Ship footprint
+        this.drawBoxHandle(
+            level.shipStart.x, 
+            level.shipStart.y + (SHIP_WING_Y + SHIP_NOSE_Y) / 2,
+            SHIP_WING_X * 2, 
+            SHIP_WING_Y - SHIP_NOSE_Y, 
+            '#00ff00'
+        );
+
+        // 3. Pod Start Handle (Blue) - Pod size
+        this.drawBoxHandle(level.podStart.x, level.podStart.y, POD_HALF_SIZE * 2, POD_HALF_SIZE * 2, '#00aaff');
+
+        // 4. Exit Handle (Magenta) - Exit size
+        this.drawBoxHandle(
+            level.exit.x, 
+            level.exit.y - EXIT_HEIGHT / 2, 
+            EXIT_HALF_WIDTH * 2, 
+            EXIT_HEIGHT, 
+            '#ff00ff'
+        );
+
+        // 5. Platform Handles (Yellow) - Platform width
+        level.platforms.forEach(p => this.drawBoxHandle(p.x, p.y, p.width, 4, '#ffff00'));
+
+        // 6. Fan Handles (Orange) - Fan size (aligned with rotation)
+        if (level.fans) {
+            level.fans.forEach(f => {
+                this.ctx.save();
+                this.ctx.translate(f.x, f.y);
+                this.ctx.rotate(f.rotation);
+                // Draw box for fan length and width
+                this.drawBoxHandle(f.length / 2, 0, f.length, f.width, '#ff8800');
+                this.ctx.restore();
+            });
+        }
+        
+        this.ctx.restore();
+    }
+
+    private drawBoxHandle(x: number, y: number, w: number, h: number, color: string): void {
+        this.ctx.save();
+        this.ctx.translate(x, y);
+        this.ctx.beginPath();
+        this.ctx.rect(-w / 2, -h / 2, w, h);
+        this.ctx.fillStyle = color;
+        this.ctx.globalAlpha = 0.3; // More transparent for boxes
+        this.ctx.fill();
+        this.ctx.strokeStyle = color;
+        this.ctx.globalAlpha = 0.8;
+        this.ctx.lineWidth = 1;
+        this.ctx.stroke();
+        
+        // Add a small center pivot dot to help with clicking
+        this.ctx.beginPath();
+        this.ctx.arc(0, 0, 3, 0, Math.PI * 2);
+        this.ctx.fillStyle = '#fff';
+        this.ctx.fill();
         
         this.ctx.restore();
     }
