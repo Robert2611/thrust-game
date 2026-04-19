@@ -123,30 +123,51 @@ export const levels: Level[] = [
     },
     {
         name: "CROSSWINDS",
-        gravity: DEFAULT_GRAVITY,
+        gravity: 0.1,
         fuel: 600,
-        shipStart: { x: 100, y: 740 },
-        podStart: { x: 900, y: 240, type: CargoType.QUANTUM_FUEL },
-        exit: { x: 100, y: 250, radius: 40 },
+        shipStart: { "x": 100, "y": 740 },
+        podStart: { "x": 540, "y": 240, "type": "QUANTUM FUEL" },
+        exit: { "x": 100, "y": 250, "radius": 40 },
         platforms: [
-            { x: 100, y: 750, width: 80 },  // Start platform — bottom left
-            { x: 900, y: 250, width: 80 },  // Pod platform  — upper right
-            { x: 100, y: 250, width: 80 },  // Exit platform — upper left
+            {
+                x: 100,
+                y: 750,
+                width: 80
+            },
+            {
+                x: 510,
+                y: 250,
+                width: 80
+            },
+            {
+                x: 100,
+                y: 250,
+                width: 80
+            }
         ],
         fans: [
-            // Rightward fan in the lower part
-            { x: 500, y: 500, width: 50, length: 450, rotation: -Math.PI, speed: 3 },
-            // Rightward fan across the upper room
-            { x: 100, y: 150, width: 50, length: 700, rotation: 0, speed: 3 },
+            {
+                x: 0,
+                y: 480,
+                width: 50,
+                length: 450,
+                rotation: 0,
+                speed: 3
+            },
+            {
+                x: 170,
+                y: 270,
+                width: 50,
+                length: 400,
+                rotation: 5.689773361501514,
+                speed: 3
+            }
         ],
         terrain: [
             {
                 type: 'polygon',
                 points: [
-                    { x: 0, y: 750 }, { x: 550, y: 750 }, { x: 550, y: 400 },
-                    { x: 340, y: 400 }, { x: 340, y: 250 }, { x: 1000, y: 250 },
-                    { x: 1000, y: 50 }, { x: 0, y: 50 }, { x: 0, y: 250 },
-                    { x: 260, y: 250 }, { x: 260, y: 400 }, { x: 0, y: 400 }
+                    { x: 0, y: 750 }, { x: 440, y: 750 }, { x: 440, y: 400 }, { x: 340, y: 400 }, { x: 340, y: 250 }, { x: 600, y: 250 }, { x: 600, y: 50 }, { x: 370, y: 50 }, { x: 0, y: 50 }, { x: 0, y: 250 }, { x: 260, y: 250 }, { x: 260, y: 400 }, { x: 0, y: 400 }
                 ]
             }
         ]

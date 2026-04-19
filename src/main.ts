@@ -20,7 +20,7 @@ class App {
         this.game = new GameEngine();
         this._editor = new LevelEditor(this.game, this.canvas);
         this._renderer = new Renderer(this.game, this.canvas, this._editor);
-        this._ui = new UIManager(this.game);
+        this._ui = new UIManager(this.game, this._editor);
         new InputHandler(this.game);
 
         this.initResize();

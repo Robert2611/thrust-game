@@ -314,6 +314,15 @@ canvas {
     box-shadow: 0 0 40px var(--neon-blue);
 }
 
+.neon-btn.secondary {
+    background: #ffb86c; /* Orangered / Gold */
+    box-shadow: 0 0 20px #ffb86c;
+}
+
+.neon-btn.secondary:hover {
+    box-shadow: 0 0 40px #ffb86c;
+}
+
 /* Mobile Optimizations */
 @media (max-width: 600px) {
     #hud {

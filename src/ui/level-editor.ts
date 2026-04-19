@@ -22,6 +22,7 @@ export class LevelEditor {
         pointIndex?: number,
         index?: number 
     } | null = null;
+    public isModified: boolean = false;
     public get currentLevel() { return levels[this.game.currentLevelIndex]; }
 
     private dragOffset: Point = { x: 0, y: 0 };
@@ -124,6 +125,7 @@ export class LevelEditor {
             if (this.dist(mousePos, level.platforms[i]) < hitRadius) {
                 if (isDeleteShape) {
                     level.platforms.splice(i, 1);
+                    this.isModified = true;
                     this.selectedItem = null;
                 } else {
                     this.selectedItem = { type: 'platform', index: i };
@@ -144,6 +146,7 @@ export class LevelEditor {
             if (this.dist(mousePos, { x: handleX, y: handleY }) < hitRadius) {
                 if (isDeleteShape) {
                     fans.splice(i, 1);
+                    this.isModified = true;
                     this.selectedItem = null;
                 } else {
                     this.selectedItem = { type: 'fan', index: i };
@@ -165,10 +168,12 @@ export class LevelEditor {
                     if (this.dist(mousePos, point) < hitRadius) {
                         if (isDeleteShape) {
                             level.terrain.splice(s, 1);
+                            this.isModified = true;
                             this.selectedItem = null;
                         } else if (isDelete) {
                             if (shape.points.length > 3) {
                                 shape.points.splice(p, 1);
+                                this.isModified = true;
                             }
                             this.selectedItem = null;
                         } else {
@@ -198,6 +203,7 @@ export class LevelEditor {
                             };
                             // Insert between p1 and p2
                             shape.points.splice(p + 1, 0, newPoint);
+                            this.isModified = true;
                             this.selectedItem = { type: 'vertex', shapeIndex: s, pointIndex: p + 1 };
                             this.dragOffset = { x: 0, y: 0 }; // Start fresh on new point
                             this.isDragging = true;
@@ -242,9 +248,15 @@ export class LevelEditor {
             }
 
             if (target) {
+                const oldX = target.x;
+                const oldY = target.y;
                 target.x = Math.round((mousePos.x - this.dragOffset.x) / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
                 target.y = Math.round((mousePos.y - this.dragOffset.y) / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
                 
+                if (target.x !== oldX || target.y !== oldY) {
+                    this.isModified = true;
+                }
+
                 // Sync live entities if moving start points
                 if (this.selectedItem.type === 'ship') {
                     this.game.ship.x = target.x;
@@ -324,27 +336,33 @@ export class LevelEditor {
 
             rotationInput?.addEventListener('input', (e) => {
                 fan.rotation = (e.target as HTMLInputElement).valueAsNumber * Math.PI / 180;
+                this.isModified = true;
             });
             lengthInput?.addEventListener('input', (e) => {
                 fan.length = (e.target as HTMLInputElement).valueAsNumber;
+                this.isModified = true;
             });
             widthInput?.addEventListener('input', (e) => {
                 fan.width = (e.target as HTMLInputElement).valueAsNumber;
+                this.isModified = true;
             });
             speedInput?.addEventListener('input', (e) => {
                 fan.speed = (e.target as HTMLInputElement).valueAsNumber;
+                this.isModified = true;
             });
         } else if (this.selectedItem.type === 'platform') {
             const plat = level.platforms[this.selectedItem.index!];
             renderPlatformInspector(this.inspectorContent, plat);
             this.inspectorContent.querySelector('#prop-wid')?.addEventListener('input', (e) => {
                 plat.width = (e.target as HTMLInputElement).valueAsNumber;
+                this.isModified = true;
             });
         } else if (this.selectedItem.type === 'vertex') {
             const shape = level.terrain[this.selectedItem.shapeIndex!];
             renderVertexInspector(this.inspectorContent, shape);
             this.inspectorContent.querySelector('#prop-solid')?.addEventListener('change', (e) => {
                 shape.isSolid = (e.target as HTMLInputElement).checked;
+                this.isModified = true;
             });
         } else {
             renderEntityInspector(this.inspectorContent, this.selectedItem.type);
@@ -369,6 +387,7 @@ export class LevelEditor {
         };
         
         level.terrain.push(newPoly);
+        this.isModified = true;
     }
 
     private resetCamera(): void {
@@ -378,7 +397,7 @@ export class LevelEditor {
         this.game.cameraY = this.game.ship.y - this.canvas.height / 2;
     }
 
-    private showExportDialog(): void {
+    public showExportDialog(): void {
         if (this.exportOverlay) this.exportOverlay.remove();
 
         const level = levels[this.game.currentLevelIndex];
