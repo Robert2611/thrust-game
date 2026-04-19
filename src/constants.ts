@@ -102,3 +102,9 @@ export const RADAR_VOID_COLOR = '#050507';
 // --- Level Editor ---
 export const EDITOR_GRID_SIZE = 10;
 export const EDITOR_POINT_RADIUS = 8;
+export const EDITOR_DEFAULT_POLYGON_SIZE = 50;
+export const EDITOR_DEFAULT_PLATFORM_WIDTH = 80;
+export const EDITOR_DEFAULT_EXIT_RADIUS = 40;
+export const EDITOR_DEFAULT_FAN_WIDTH = 50;
+export const EDITOR_DEFAULT_FAN_LENGTH = 300;
+export const EDITOR_DEFAULT_FAN_SPEED = 3;

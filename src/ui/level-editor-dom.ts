@@ -15,6 +15,11 @@ export interface EditorPanelElements {
     inspectorSection: HTMLDivElement;
     inspectorContent: HTMLDivElement;
     addPolygonButton: HTMLButtonElement;
+    addPlatformButton: HTMLButtonElement;
+    addFanButton: HTMLButtonElement;
+    addShipButton: HTMLButtonElement;
+    addPodButton: HTMLButtonElement;
+    addExitButton: HTMLButtonElement;
     exportButton: HTMLButtonElement;
     resetCameraButton: HTMLButtonElement;
 }
@@ -100,12 +105,28 @@ export function createEditorPanel(): EditorPanelElements {
     const addPolygonButton = createElement('button') as HTMLButtonElement;
     addPolygonButton.id = 'add-poly-btn';
     addPolygonButton.textContent = '+ POLYGON';
+
+    const addPlatformButton = createElement('button') as HTMLButtonElement;
+    addPlatformButton.id = 'add-platform-btn';
+    addPlatformButton.textContent = '+ PLATFORM';
+
     const addFanButton = createElement('button') as HTMLButtonElement;
     addFanButton.id = 'add-fan-btn';
-    addFanButton.textContent = '+ FAN (TBA)';
-    addFanButton.disabled = true;
-    addFanButton.style.opacity = '0.5';
-    addActions.append(addPolygonButton, addFanButton);
+    addFanButton.textContent = '+ FAN';
+
+    const addShipButton = createElement('button') as HTMLButtonElement;
+    addShipButton.id = 'add-ship-btn';
+    addShipButton.textContent = 'SET SHIP';
+
+    const addPodButton = createElement('button') as HTMLButtonElement;
+    addPodButton.id = 'add-pod-btn';
+    addPodButton.textContent = 'SET POD';
+
+    const addExitButton = createElement('button') as HTMLButtonElement;
+    addExitButton.id = 'add-exit-btn';
+    addExitButton.textContent = 'SET EXIT';
+
+    addActions.append(addPolygonButton, addPlatformButton, addFanButton, addShipButton, addPodButton, addExitButton);
     addSection.appendChild(addActions);
     toolsPanel.appendChild(addSection);
 
@@ -150,6 +171,11 @@ export function createEditorPanel(): EditorPanelElements {
         inspectorSection,
         inspectorContent,
         addPolygonButton,
+        addPlatformButton,
+        addFanButton,
+        addShipButton,
+        addPodButton,
+        addExitButton,
         exportButton,
         resetCameraButton
     };

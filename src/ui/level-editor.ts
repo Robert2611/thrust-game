@@ -1,6 +1,15 @@
 import { GameEngine } from '../core/game-engine';
 import { Point, TerrainObject } from '../types';
-import { EDITOR_GRID_SIZE, EDITOR_POINT_RADIUS } from '../constants';
+import {
+    EDITOR_DEFAULT_EXIT_RADIUS,
+    EDITOR_DEFAULT_FAN_LENGTH,
+    EDITOR_DEFAULT_FAN_SPEED,
+    EDITOR_DEFAULT_FAN_WIDTH,
+    EDITOR_DEFAULT_PLATFORM_WIDTH,
+    EDITOR_DEFAULT_POLYGON_SIZE,
+    EDITOR_GRID_SIZE,
+    EDITOR_POINT_RADIUS
+} from '../constants';
 import { levels } from '../data/levels';
 import {
     createEditorPanel,
@@ -306,6 +315,11 @@ export class LevelEditor {
         this.panel.style.display = 'none';
 
         panelElements.addPolygonButton.addEventListener('click', () => this.addPolygon());
+        panelElements.addPlatformButton.addEventListener('click', () => this.addPlatform());
+        panelElements.addFanButton.addEventListener('click', () => this.addFan());
+        panelElements.addShipButton.addEventListener('click', () => this.setShipStart());
+        panelElements.addPodButton.addEventListener('click', () => this.setPodStart());
+        panelElements.addExitButton.addEventListener('click', () => this.setExit());
         panelElements.exportButton.addEventListener('click', () => this.showExportDialog());
         panelElements.resetCameraButton.addEventListener('click', () => this.resetCamera());
     }
@@ -371,23 +385,90 @@ export class LevelEditor {
 
     private addPolygon(): void {
         const level = levels[this.game.currentLevelIndex];
-        const cx = this.game.cameraX + this.canvas.width / 2;
-        const cy = this.game.cameraY + this.canvas.height / 2;
+        const center = this.getSnappedScreenCenterWorldPos();
         
         // Spawn a default triangle
-        const size = 50;
+        const size = EDITOR_DEFAULT_POLYGON_SIZE;
         const newPoly = {
             type: 'polygon' as const,
             points: [
-                { x: Math.round(cx / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE, y: Math.round((cy - size) / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE },
-                { x: Math.round((cx + size) / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE, y: Math.round((cy + size) / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE },
-                { x: Math.round((cx - size) / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE, y: Math.round((cy + size) / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE }
+                { x: center.x, y: this.snapToGrid(center.y - size) },
+                { x: this.snapToGrid(center.x + size), y: this.snapToGrid(center.y + size) },
+                { x: this.snapToGrid(center.x - size), y: this.snapToGrid(center.y + size) }
             ],
             isSolid: true
         };
         
         level.terrain.push(newPoly);
         this.isModified = true;
+    }
+
+    private addPlatform(): void {
+        const level = levels[this.game.currentLevelIndex];
+        const center = this.getSnappedScreenCenterWorldPos();
+        level.platforms.push({
+            x: center.x,
+            y: center.y,
+            width: EDITOR_DEFAULT_PLATFORM_WIDTH
+        });
+        this.isModified = true;
+    }
+
+    private addFan(): void {
+        const level = levels[this.game.currentLevelIndex];
+        const center = this.getSnappedScreenCenterWorldPos();
+        if (!level.fans) {
+            level.fans = [];
+        }
+        level.fans.push({
+            x: center.x,
+            y: center.y,
+            width: EDITOR_DEFAULT_FAN_WIDTH,
+            length: EDITOR_DEFAULT_FAN_LENGTH,
+            rotation: 0,
+            speed: EDITOR_DEFAULT_FAN_SPEED
+        });
+        this.isModified = true;
+    }
+
+    private setShipStart(): void {
+        const level = levels[this.game.currentLevelIndex];
+        const center = this.getSnappedScreenCenterWorldPos();
+        level.shipStart.x = center.x;
+        level.shipStart.y = center.y;
+        this.game.ship.x = center.x;
+        this.game.ship.y = center.y;
+        this.isModified = true;
+    }
+
+    private setPodStart(): void {
+        const level = levels[this.game.currentLevelIndex];
+        const center = this.getSnappedScreenCenterWorldPos();
+        level.podStart.x = center.x;
+        level.podStart.y = center.y;
+        this.game.pod.x = center.x;
+        this.game.pod.y = center.y;
+        this.isModified = true;
+    }
+
+    private setExit(): void {
+        const level = levels[this.game.currentLevelIndex];
+        const center = this.getSnappedScreenCenterWorldPos();
+        level.exit.x = center.x;
+        level.exit.y = center.y;
+        level.exit.radius = EDITOR_DEFAULT_EXIT_RADIUS;
+        this.isModified = true;
+    }
+
+    private snapToGrid(value: number): number {
+        return Math.round(value / EDITOR_GRID_SIZE) * EDITOR_GRID_SIZE;
+    }
+
+    private getSnappedScreenCenterWorldPos(): Point {
+        return {
+            x: this.snapToGrid(this.game.cameraX + this.canvas.width / 2),
+            y: this.snapToGrid(this.game.cameraY + this.canvas.height / 2)
+        };
     }
 
     private resetCamera(): void {
