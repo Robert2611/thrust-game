@@ -39,11 +39,13 @@ This applies to:
 - Array indices
 - String template literals
 
-### Mandatory Build Check
+### Mandatory Build and Test Checks
 
-**Every change must be verified by running `npm run build` (or `tsc`).**
+**Every change must be verified by running both `npm run build` (or `tsc`) and `npm run test`.**
 
 This project has strict TypeScript rules enabled (`noUnusedLocals`, `noUnusedParameters`). Running only the tests is **not sufficient**, as tests do not always trigger a full compilation. You must ensure the codebase compiles cleanly without warnings or errors before marking a task as complete.
+
+Tests are also required to catch behavioral regressions. Running only `npm run build` is **not sufficient**; you must also run `npm run test` and confirm it passes before marking a task as complete.
 
 ---
 

@@ -2,6 +2,14 @@ import { GameEngine } from '../core/game-engine';
 import { Point, TerrainObject } from '../types';
 import { EDITOR_GRID_SIZE, EDITOR_POINT_RADIUS } from '../constants';
 import { levels } from '../data/levels';
+import {
+    createEditorPanel,
+    createExportOverlay,
+    renderEntityInspector,
+    renderFanInspector,
+    renderPlatformInspector,
+    renderVertexInspector
+} from './level-editor-dom';
 
 export class LevelEditor {
     private game: GameEngine;
@@ -23,6 +31,8 @@ export class LevelEditor {
     
     private panel: HTMLElement | null = null;
     private exportOverlay: HTMLElement | null = null;
+    private inspectorSection: HTMLDivElement | null = null;
+    private inspectorContent: HTMLDivElement | null = null;
 
     constructor(gameEngine: GameEngine, canvas: HTMLCanvasElement) {
         this.game = gameEngine;
@@ -275,59 +285,29 @@ export class LevelEditor {
     }
 
     private createPanel(): void {
-        this.panel = document.createElement('div');
-        this.panel.id = 'editor-panel';
-        this.panel.innerHTML = `
-            <h3>LEVEL EDITOR</h3>
-            <div class="editor-info">Mode: Hybrid Edit</div>
-            
-            <div class="editor-section">
-                <span>ADD ENTITY:</span>
-                <div class="editor-actions">
-                    <button id="add-poly-btn">+ POLYGON</button>
-                    <button id="add-fan-btn" disabled style="opacity: 0.5">+ FAN (TBA)</button>
-                </div>
-            </div>
+        const panelElements = createEditorPanel();
+        this.panel = panelElements.panel;
+        this.inspectorSection = panelElements.inspectorSection;
+        this.inspectorContent = panelElements.inspectorContent;
 
-            <div id="inspector-section" class="editor-section" style="display: none;">
-                <span>PROPERTIES:</span>
-                <div id="inspector-content"></div>
-            </div>
-
-            <div class="editor-section">
-                <span>PROJECT:</span>
-                <div class="editor-actions">
-                    <button id="export-btn">EXPORT CODE</button>
-                    <button id="reset-cam-btn">RESET VIEW</button>
-                </div>
-            </div>
-
-            <div class="editor-hint"><b>Drag</b>: Move handle / Pan space</div>
-            <div class="editor-hint"><b>Click Line</b>: Add Vertex</div>
-            <div class="editor-hint"><b>Ctrl + Click</b>: Delete Vertex</div>
-            <div class="editor-hint"><b>Ctrl + Shift + Click</b>: Delete Shape/Entity</div>
-            <div class="editor-hint"><b>Alt + E</b>: Toggle Editor</div>
-        `;
         document.body.appendChild(this.panel);
         this.panel.style.display = 'none';
 
-        document.getElementById('add-poly-btn')?.addEventListener('click', () => this.addPolygon());
-        document.getElementById('export-btn')?.addEventListener('click', () => this.showExportDialog());
-        document.getElementById('reset-cam-btn')?.addEventListener('click', () => this.resetCamera());
+        panelElements.addPolygonButton.addEventListener('click', () => this.addPolygon());
+        panelElements.exportButton.addEventListener('click', () => this.showExportDialog());
+        panelElements.resetCameraButton.addEventListener('click', () => this.resetCamera());
     }
 
     private updateInspector(): void {
-        const section = document.getElementById('inspector-section');
-        const content = document.getElementById('inspector-content');
-        if (!section || !content) return;
+        if (!this.inspectorSection || !this.inspectorContent) return;
 
         if (!this.selectedItem) {
-            section.style.display = 'none';
+            this.inspectorSection.style.display = 'none';
             return;
         }
 
-        section.style.display = 'block';
-        content.innerHTML = ''; // Clear
+        this.inspectorSection.style.display = 'block';
+        this.inspectorContent.replaceChildren();
 
         const level = levels[this.game.currentLevelIndex];
         
@@ -335,61 +315,39 @@ export class LevelEditor {
             const fan = (level.fans || [])[this.selectedItem.index!];
             if (!fan) return;
 
-            content.innerHTML = `
-                <div class="prop-row">
-                    <label>Rot (deg)</label>
-                    <input type="range" id="prop-rot" min="0" max="360" value="${Math.round(fan.rotation * 180 / Math.PI)}">
-                </div>
-                <div class="prop-row">
-                    <label>Length</label>
-                    <input type="number" id="prop-len" value="${fan.length}" step="10">
-                </div>
-                <div class="prop-row">
-                    <label>Width</label>
-                    <input type="number" id="prop-wid" value="${fan.width}" step="5">
-                </div>
-                <div class="prop-row">
-                    <label>Speed</label>
-                    <input type="number" id="prop-spd" value="${fan.speed}" step="0.5">
-                </div>
-            `;
+            renderFanInspector(this.inspectorContent, fan);
 
-            document.getElementById('prop-rot')?.addEventListener('input', (e) => {
+            const rotationInput = this.inspectorContent.querySelector('#prop-rot');
+            const lengthInput = this.inspectorContent.querySelector('#prop-len');
+            const widthInput = this.inspectorContent.querySelector('#prop-wid');
+            const speedInput = this.inspectorContent.querySelector('#prop-spd');
+
+            rotationInput?.addEventListener('input', (e) => {
                 fan.rotation = (e.target as HTMLInputElement).valueAsNumber * Math.PI / 180;
             });
-            document.getElementById('prop-len')?.addEventListener('input', (e) => {
+            lengthInput?.addEventListener('input', (e) => {
                 fan.length = (e.target as HTMLInputElement).valueAsNumber;
             });
-            document.getElementById('prop-wid')?.addEventListener('input', (e) => {
+            widthInput?.addEventListener('input', (e) => {
                 fan.width = (e.target as HTMLInputElement).valueAsNumber;
             });
-            document.getElementById('prop-spd')?.addEventListener('input', (e) => {
+            speedInput?.addEventListener('input', (e) => {
                 fan.speed = (e.target as HTMLInputElement).valueAsNumber;
             });
         } else if (this.selectedItem.type === 'platform') {
             const plat = level.platforms[this.selectedItem.index!];
-            content.innerHTML = `
-                <div class="prop-row">
-                    <label>Width</label>
-                    <input type="number" id="prop-wid" value="${plat.width}" step="10">
-                </div>
-            `;
-            document.getElementById('prop-wid')?.addEventListener('input', (e) => {
+            renderPlatformInspector(this.inspectorContent, plat);
+            this.inspectorContent.querySelector('#prop-wid')?.addEventListener('input', (e) => {
                 plat.width = (e.target as HTMLInputElement).valueAsNumber;
             });
         } else if (this.selectedItem.type === 'vertex') {
             const shape = level.terrain[this.selectedItem.shapeIndex!];
-            content.innerHTML = `
-                <div class="prop-row">
-                    <label>Solid</label>
-                    <input type="checkbox" id="prop-solid" ${shape.isSolid ? 'checked' : ''}>
-                </div>
-            `;
-            document.getElementById('prop-solid')?.addEventListener('change', (e) => {
+            renderVertexInspector(this.inspectorContent, shape);
+            this.inspectorContent.querySelector('#prop-solid')?.addEventListener('change', (e) => {
                 shape.isSolid = (e.target as HTMLInputElement).checked;
             });
         } else {
-            content.innerHTML = `<div class="prop-row"><span>Entity: ${this.selectedItem.type.toUpperCase()}</span></div>`;
+            renderEntityInspector(this.inspectorContent, this.selectedItem.type);
         }
     }
 
@@ -422,38 +380,23 @@ export class LevelEditor {
 
     private showExportDialog(): void {
         if (this.exportOverlay) this.exportOverlay.remove();
-        
-        this.exportOverlay = document.createElement('div');
-        this.exportOverlay.id = 'export-overlay';
-        this.exportOverlay.className = 'overlay';
-        
+
         const level = levels[this.game.currentLevelIndex];
         const code = this.generateLevelCode(level);
-        
-        this.exportOverlay.innerHTML = `
-            <div class="export-content">
-                <h2>Export Level Code</h2>
-                <p>Copy and paste this into src/data/levels.ts</p>
-                <textarea id="export-textarea" readonly>${code}</textarea>
-                <div class="export-actions">
-                    <button id="copy-btn">COPY TO CLIPBOARD</button>
-                    <button id="close-export-btn">CLOSE</button>
-                </div>
-            </div>
-        `;
-        
+
+        const exportElements = createExportOverlay(code);
+        this.exportOverlay = exportElements.overlay;
+
         document.body.appendChild(this.exportOverlay);
         this.exportOverlay.style.display = 'flex';
-        
-        document.getElementById('copy-btn')?.addEventListener('click', () => {
-            const textarea = document.getElementById('export-textarea') as HTMLTextAreaElement;
-            textarea.select();
-            navigator.clipboard.writeText(textarea.value);
-            const btn = document.getElementById('copy-btn');
-            if (btn) btn.innerText = 'COPIED!';
+
+        exportElements.copyButton.addEventListener('click', () => {
+            exportElements.textarea.select();
+            navigator.clipboard.writeText(exportElements.textarea.value);
+            exportElements.copyButton.innerText = 'COPIED!';
         });
-        
-        document.getElementById('close-export-btn')?.addEventListener('click', () => {
+
+        exportElements.closeButton.addEventListener('click', () => {
             if (this.exportOverlay) this.exportOverlay.style.display = 'none';
         });
     }
