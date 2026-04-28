@@ -16,7 +16,6 @@ import {
 } from '../constants';
 import { GameEngine } from '../core/game-engine';
 import { Level } from '../types';
-import { getTerrainPolygons } from '../core/terrain-utils';
 import { LevelEditor } from './level-editor';
 
 export class Renderer {
@@ -86,8 +85,7 @@ export class Renderer {
         // 2. Clear out the corridor and show stars inside it
         this.ctx.save();
         this.ctx.beginPath();
-        const polygons = getTerrainPolygons(level.terrain);
-        for (const poly of polygons) {
+        for (const poly of level.terrain) {
             if (!poly.isSolid) {
                 this.addPolygonPath(this.ctx, poly.points);
             }
@@ -128,15 +126,13 @@ export class Renderer {
     }
 
     private drawTerrain(level: Level): void {
-        const polygons = getTerrainPolygons(level.terrain);
-        
         // Draw the edges of the holes and the solid islands
         this.ctx.save();
         this.ctx.shadowColor = this.colors.caveWallEdge;
         this.ctx.strokeStyle = this.colors.caveWallEdge;
         this.ctx.lineWidth = TERRAIN_LINE_WIDTH;
 
-        for (const poly of polygons) {
+        for (const poly of level.terrain) {
             this.ctx.beginPath();
             this.addPolygonPath(this.ctx, poly.points);
             
@@ -356,8 +352,7 @@ export class Renderer {
         const selected = this.editor.selectedItem;
 
         // 1. Terrain Handles (Cyan) - Small squares for vertices
-        const polygons = getTerrainPolygons(level.terrain);
-        polygons.forEach((poly, s) => {
+        level.terrain.forEach((poly, s) => {
             poly.points.forEach((p, v) => {
                 const isSelected = selected?.type === 'vertex' && selected.shapeIndex === s && selected.pointIndex === v;
                 this.drawBoxHandle(p.x, p.y, 6, 6, '#00ffff', isSelected);
@@ -460,8 +455,7 @@ export class Renderer {
         // Clip out the hallway for the sky
         this.rctx.save();
         this.rctx.beginPath();
-        const polygons = getTerrainPolygons(level.terrain);
-        for (const poly of polygons) {
+        for (const poly of level.terrain) {
             if (!poly.isSolid) {
                 this.addPolygonPath(this.rctx, poly.points);
             }
@@ -477,7 +471,7 @@ export class Renderer {
         this.rctx.strokeStyle = this.colors.radarGridColor;
         this.rctx.lineWidth = 1 / targetScale; // visually maintain 1px
         
-        for (const poly of polygons) {
+        for (const poly of level.terrain) {
             this.rctx.beginPath();
             this.addPolygonPath(this.rctx, poly.points);
             if (poly.isSolid) {

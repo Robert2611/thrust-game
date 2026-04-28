@@ -63,6 +63,7 @@ export class LevelEditor {
             this.selectedItem = null;
             this.isDragging = false;
             this.isPanning = false;
+            this.updateInspector();
         }
     }
 
@@ -502,19 +503,23 @@ export class LevelEditor {
     }
 
     private generateLevelCode(level: any): string {
-        // Post-process to fix point readability if needed, but for now we'll just return formatted JSON
-        return `{\n    name: "${level.name}",\n    gravity: ${level.gravity},\n    fuel: ${level.fuel},\n    shipStart: ${JSON.stringify(level.shipStart)},\n    podStart: ${JSON.stringify(level.podStart)},\n    exit: ${JSON.stringify(level.exit)},\n    platforms: ${JSON.stringify(level.platforms, null, 12).replace(/"/g, '')},\n    fans: ${JSON.stringify(level.fans || [], null, 12).replace(/"/g, '')},\n    terrain: ${this.formatTerrain(level.terrain)}\n}`;
+        const shipStartStr = `{ x: ${level.shipStart.x}, y: ${level.shipStart.y} }`;
+        
+        const getCargoTypeString = (type: string) => {
+            if (type === 'QUANTUM FUEL') return 'CargoType.QUANTUM_FUEL';
+            return 'CargoType.NEON_CORE';
+        };
+        const podStartStr = `{ x: ${level.podStart.x}, y: ${level.podStart.y}, type: ${getCargoTypeString(level.podStart.type)} }`;
+        
+        const exitStr = `{ x: ${level.exit.x}, y: ${level.exit.y}, radius: ${level.exit.radius} }`;
+
+        return `{\n    name: "${level.name}",\n    gravity: ${level.gravity},\n    fuel: ${level.fuel},\n    shipStart: ${shipStartStr},\n    podStart: ${podStartStr},\n    exit: ${exitStr},\n    platforms: ${JSON.stringify(level.platforms, null, 12).replace(/"/g, '')},\n    fans: ${JSON.stringify(level.fans || [], null, 12).replace(/"/g, '')},\n    terrain: ${this.formatTerrain(level.terrain)}\n}`;
     }
 
     private formatTerrain(terrain: TerrainObject[]): string {
         return '[\n        ' + terrain.map(t => {
-            if (t.type === 'polygon') {
-                const points = t.points.map(p => `{ x: ${p.x}, y: ${p.y} }`).join(', ');
-                return `{\n            type: 'polygon',\n            points: [\n                ${points}\n            ]${t.isSolid ? ',\n            isSolid: true' : ''}\n        }`;
-            } else if (t.type === 'rect') {
-                return `{\n            type: 'rect', x: ${t.x}, y: ${t.y}, width: ${t.width}, height: ${t.height}${t.isSolid ? ', isSolid: true' : ''}\n        }`;
-            }
-            return '';
+            const points = t.points.map(p => `{ x: ${p.x}, y: ${p.y} }`).join(', ');
+            return `{\n            type: 'polygon',\n            points: [\n                ${points}\n            ]${t.isSolid ? ',\n            isSolid: true' : ''}\n        }`;
         }).join(',\n        ') + '\n    ]';
     }
 }

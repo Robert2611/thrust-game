@@ -1,6 +1,5 @@
 import { Ship } from '../models/ship';
 import { Platform, TerrainObject } from '../types';
-import { getTerrainPolygons } from './terrain-utils';
 import {
     SHIP_HALF_HEIGHT, SHIP_COLLISION_RADIUS,
     PLATFORM_SNAP_TOLERANCE, LANDING_MAX_SPEED, LANDING_MAX_ANGLE
@@ -33,8 +32,7 @@ export class CollisionDetector {
         }
 
         // 2. Terrain Collision (Fatal walls)
-        const polygons = getTerrainPolygons(terrain);
-        for (const poly of polygons) {
+        for (const poly of terrain) {
             const points = poly.points;
             if (points.length < 2) continue;
 

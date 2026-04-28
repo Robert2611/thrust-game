@@ -4,45 +4,71 @@ import { Level } from '../types';
 export const levels: Level[] = [
     {
         name: "VALLEY OF NEON",
-        gravity: DEFAULT_GRAVITY,
+        gravity: 0.1,
         fuel: 300,
-        shipStart: { x: 100, y: 590 },
-        podStart: { x: 800, y: 690, type: CargoType.NEON_CORE },
-        exit: { x: 100, y: 100, radius: 40 },
+        shipStart: { "x": 100, "y": 590 },
+        podStart: { x: 660, y: 580, type: CargoType.NEON_CORE },
+        exit: { "x": 390, "y": 470, "radius": 40 },
         platforms: [
-            { x: 100, y: 600, width: 80 }, // Start platform
-            { x: 800, y: 700, width: 80 }, // Cargo platform
-            { x: 100, y: 100, width: 80 }  // Exit platform
+            {
+                x: 100,
+                y: 600,
+                width: 80
+            },
+            {
+                x: 660,
+                y: 590,
+                width: 80
+            },
+            {
+                x: 390,
+                y: 470,
+                width: 80
+            }
         ],
+        fans: [],
         terrain: [
             {
                 type: 'polygon',
                 points: [
-                    { x: 0, y: 600 }, { x: 200, y: 600 }, { x: 300, y: 400 },
-                    { x: 500, y: 400 }, { x: 600, y: 700 }, { x: 900, y: 700 },
-                    { x: 1000, y: 500 }, { x: 1000, y: 20 }, { x: 800, y: 50 },
-                    { x: 400, y: 100 }, { x: 0, y: 20 }
+                    { x: 0, y: 600 }, { x: 200, y: 600 }, { x: 320, y: 470 }, { x: 470, y: 470 }, { x: 590, y: 590 }, { x: 740, y: 590 }, { x: 750, y: 320 }, { x: 560, y: 190 }, { x: 190, y: 190 }, { x: 0, y: 320 }
                 ]
             }
         ]
-    },
-    {
+    }, {
         name: "THE GAUNTLET",
-        gravity: DEFAULT_GRAVITY,
+        gravity: 0.1,
         fuel: 300,
         shipStart: { x: 100, y: 340 },
-        podStart: { x: 900, y: 740, type: CargoType.QUANTUM_FUEL },
+        podStart: { x: 600, y: 340, type: CargoType.QUANTUM_FUEL },
         exit: { x: 100, y: 350, radius: 40 },
         platforms: [
-            { x: 100, y: 350, width: 80 },
-            { x: 900, y: 750, width: 80 }
+            {
+                x: 100,
+                y: 350,
+                width: 80
+            },
+            {
+                x: 600,
+                y: 350,
+                width: 80
+            }
         ],
+        fans: [],
         terrain: [
-            // The main cavern
-            { type: 'rect', x: 0, y: 0, width: 1000, height: 800 },
-            // Two solid shelves that constrict the passage
-            { type: 'rect', x: 0, y: 480, width: 750, height: 40, isSolid: true },
-            { type: 'rect', x: 0, y: 180, width: 750, height: 40, isSolid: true }
+            {
+                type: 'polygon',
+                points: [
+                    { x: -30, y: 0 }, { x: 240, y: 0 }, { x: 290, y: 20 }, { x: 330, y: 30 }, { x: 380, y: 30 }, { x: 420, y: 20 }, { x: 450, y: 0 }, { x: 730, y: 0 }, { x: 730, y: 350 }, { x: 370, y: 350 }, { x: 350, y: 340 }, { x: 310, y: 330 }, { x: 270, y: 340 }, { x: 230, y: 350 }, { x: -30, y: 350 }
+                ]
+            },
+            {
+                type: 'polygon',
+                points: [
+                    { x: 260, y: 150 }, { x: 300, y: 140 }, { x: 340, y: 140 }, { x: 360, y: 150 }, { x: 380, y: 170 }, { x: 390, y: 200 }, { x: 380, y: 240 }, { x: 360, y: 270 }, { x: 340, y: 280 }, { x: 300, y: 280 }, { x: 280, y: 270 }, { x: 250, y: 250 }, { x: 240, y: 230 }, { x: 240, y: 190 }
+                ],
+                isSolid: true
+            }
         ]
     },
     {

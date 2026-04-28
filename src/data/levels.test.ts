@@ -28,13 +28,8 @@ describe('Levels Sanity Checks', () => {
             // Terrain objects
             expect(level.terrain.length).toBeGreaterThan(0);
             level.terrain.forEach(obj => {
-                expect(['polygon', 'rect']).toContain(obj.type);
-                if (obj.type === 'polygon') {
-                    expect(obj.points.length).toBeGreaterThanOrEqual(2);
-                } else if (obj.type === 'rect') {
-                    expect(obj.width).toBeGreaterThan(0);
-                    expect(obj.height).toBeGreaterThan(0);
-                }
+                expect(obj.type).toBe('polygon');
+                expect(obj.points.length).toBeGreaterThanOrEqual(2);
             });
 
             // Platforms
