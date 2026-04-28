@@ -1,20 +1,20 @@
 import { GameEngine } from '../core/game-engine';
-import { Point, TerrainObject } from '../types';
+import { Platform, Point, TerrainObject } from '../types';
 import {
-    EDITOR_DEFAULT_EXIT_RADIUS,
+    CargoType,
     EDITOR_DEFAULT_FAN_LENGTH,
     EDITOR_DEFAULT_FAN_SPEED,
     EDITOR_DEFAULT_FAN_WIDTH,
     EDITOR_DEFAULT_PLATFORM_WIDTH,
     EDITOR_DEFAULT_POLYGON_SIZE,
     EDITOR_GRID_SIZE,
-    EDITOR_POINT_RADIUS
+    EDITOR_POINT_RADIUS,
+    PlatformType
 } from '../constants';
 import { levels } from '../data/levels';
 import {
     createEditorPanel,
     createExportOverlay,
-    renderEntityInspector,
     renderFanInspector,
     renderPlatformInspector,
     renderVertexInspector
@@ -26,7 +26,7 @@ export class LevelEditor {
     private isActive: boolean = false;
     
     public selectedItem: { 
-        type: 'vertex' | 'ship' | 'pod' | 'exit' | 'platform' | 'fan', 
+        type: 'vertex' | 'platform' | 'fan',
         shapeIndex?: number, 
         pointIndex?: number,
         index?: number 
@@ -104,31 +104,7 @@ export class LevelEditor {
         // Reset offset
         this.dragOffset = { x: 0, y: 0 };
         
-        // --- 1. Hit-test entities (Ship, Pod, Exit, Platforms, Fans) ---
-        
-        // Ship Start (No delete)
-        if (this.dist(mousePos, level.shipStart) < hitRadius) {
-            this.selectedItem = { type: 'ship' };
-            this.dragOffset = { x: mousePos.x - level.shipStart.x, y: mousePos.y - level.shipStart.y };
-            this.isDragging = true;
-            return;
-        }
-
-        // Pod Start (No delete)
-        if (this.dist(mousePos, level.podStart) < hitRadius) {
-            this.selectedItem = { type: 'pod' };
-            this.dragOffset = { x: mousePos.x - level.podStart.x, y: mousePos.y - level.podStart.y };
-            this.isDragging = true;
-            return;
-        }
-
-        // Exit (No delete)
-        if (this.dist(mousePos, level.exit) < hitRadius) {
-            this.selectedItem = { type: 'exit' };
-            this.dragOffset = { x: mousePos.x - level.exit.x, y: mousePos.y - level.exit.y };
-            this.isDragging = true;
-            return;
-        }
+        // --- 1. Hit-test entities (Platforms, Fans) ---
 
         // Platforms (Deletion supported)
         for (let i = 0; i < level.platforms.length; i++) {
@@ -244,9 +220,6 @@ export class LevelEditor {
             let target: Point | null = null;
 
             switch (this.selectedItem.type) {
-                case 'ship': target = level.shipStart; break;
-                case 'pod': target = level.podStart; break;
-                case 'exit': target = level.exit; break;
                 case 'platform': target = level.platforms[this.selectedItem.index!]; break;
                 case 'fan': target = (level.fans || [])[this.selectedItem.index!]; break;
                 case 'vertex': 
@@ -267,14 +240,6 @@ export class LevelEditor {
                     this.isModified = true;
                 }
 
-                // Sync live entities if moving start points
-                if (this.selectedItem.type === 'ship') {
-                    this.game.ship.x = target.x;
-                    this.game.ship.y = target.y;
-                } else if (this.selectedItem.type === 'pod') {
-                    this.game.pod.x = target.x;
-                    this.game.pod.y = target.y;
-                }
             }
         } else if (this.isPanning) {
             const dx = e.clientX - this.lastMouseScreenPos.x;
@@ -316,11 +281,10 @@ export class LevelEditor {
         this.panel.style.display = 'none';
 
         panelElements.addPolygonButton.addEventListener('click', () => this.addPolygon());
-        panelElements.addPlatformButton.addEventListener('click', () => this.addPlatform());
+        panelElements.addStartPlatformButton.addEventListener('click', () => this.addPlatform(PlatformType.START));
+        panelElements.addCargoPlatformButton.addEventListener('click', () => this.addPlatform(PlatformType.CARGO));
+        panelElements.addDropPlatformButton.addEventListener('click', () => this.addPlatform(PlatformType.DROP));
         panelElements.addFanButton.addEventListener('click', () => this.addFan());
-        panelElements.addShipButton.addEventListener('click', () => this.setShipStart());
-        panelElements.addPodButton.addEventListener('click', () => this.setPodStart());
-        panelElements.addExitButton.addEventListener('click', () => this.setExit());
         panelElements.exportButton.addEventListener('click', () => this.showExportDialog());
         panelElements.resetCameraButton.addEventListener('click', () => this.resetCamera());
     }
@@ -372,6 +336,10 @@ export class LevelEditor {
                 plat.width = (e.target as HTMLInputElement).valueAsNumber;
                 this.isModified = true;
             });
+            this.inspectorContent.querySelector('#prop-platform-type')?.addEventListener('change', (e) => {
+                plat.type = (e.target as HTMLSelectElement).value as PlatformType;
+                this.isModified = true;
+            });
         } else if (this.selectedItem.type === 'vertex') {
             const shape = level.terrain[this.selectedItem.shapeIndex!];
             renderVertexInspector(this.inspectorContent, shape);
@@ -379,8 +347,6 @@ export class LevelEditor {
                 shape.isSolid = (e.target as HTMLInputElement).checked;
                 this.isModified = true;
             });
-        } else {
-            renderEntityInspector(this.inspectorContent, this.selectedItem.type);
         }
     }
 
@@ -404,13 +370,15 @@ export class LevelEditor {
         this.isModified = true;
     }
 
-    private addPlatform(): void {
+    private addPlatform(type: PlatformType): void {
         const level = levels[this.game.currentLevelIndex];
         const center = this.getSnappedScreenCenterWorldPos();
+        this.ensureSingleRolePlatform(type);
         level.platforms.push({
             x: center.x,
             y: center.y,
-            width: EDITOR_DEFAULT_PLATFORM_WIDTH
+            width: EDITOR_DEFAULT_PLATFORM_WIDTH,
+            type
         });
         this.isModified = true;
     }
@@ -429,35 +397,6 @@ export class LevelEditor {
             rotation: 0,
             speed: EDITOR_DEFAULT_FAN_SPEED
         });
-        this.isModified = true;
-    }
-
-    private setShipStart(): void {
-        const level = levels[this.game.currentLevelIndex];
-        const center = this.getSnappedScreenCenterWorldPos();
-        level.shipStart.x = center.x;
-        level.shipStart.y = center.y;
-        this.game.ship.x = center.x;
-        this.game.ship.y = center.y;
-        this.isModified = true;
-    }
-
-    private setPodStart(): void {
-        const level = levels[this.game.currentLevelIndex];
-        const center = this.getSnappedScreenCenterWorldPos();
-        level.podStart.x = center.x;
-        level.podStart.y = center.y;
-        this.game.pod.x = center.x;
-        this.game.pod.y = center.y;
-        this.isModified = true;
-    }
-
-    private setExit(): void {
-        const level = levels[this.game.currentLevelIndex];
-        const center = this.getSnappedScreenCenterWorldPos();
-        level.exit.x = center.x;
-        level.exit.y = center.y;
-        level.exit.radius = EDITOR_DEFAULT_EXIT_RADIUS;
         this.isModified = true;
     }
 
@@ -503,17 +442,19 @@ export class LevelEditor {
     }
 
     private generateLevelCode(level: any): string {
-        const shipStartStr = `{ x: ${level.shipStart.x}, y: ${level.shipStart.y} }`;
-        
-        const getCargoTypeString = (type: string) => {
-            if (type === 'QUANTUM FUEL') return 'CargoType.QUANTUM_FUEL';
+        const getCargoTypeString = (type: CargoType) => {
+            if (type === CargoType.QUANTUM_FUEL) return 'CargoType.QUANTUM_FUEL';
             return 'CargoType.NEON_CORE';
         };
-        const podStartStr = `{ x: ${level.podStart.x}, y: ${level.podStart.y}, type: ${getCargoTypeString(level.podStart.type)} }`;
-        
-        const exitStr = `{ x: ${level.exit.x}, y: ${level.exit.y}, radius: ${level.exit.radius} }`;
 
-        return `{\n    name: "${level.name}",\n    gravity: ${level.gravity},\n    fuel: ${level.fuel},\n    shipStart: ${shipStartStr},\n    podStart: ${podStartStr},\n    exit: ${exitStr},\n    platforms: ${JSON.stringify(level.platforms, null, 12).replace(/"/g, '')},\n    fans: ${JSON.stringify(level.fans || [], null, 12).replace(/"/g, '')},\n    terrain: ${this.formatTerrain(level.terrain)}\n}`;
+        return `{\n    name: "${level.name}",\n    gravity: ${level.gravity},\n    fuel: ${level.fuel},\n    cargoType: ${getCargoTypeString(level.cargoType)},\n    platforms: ${this.formatPlatforms(level.platforms)},\n    fans: ${JSON.stringify(level.fans || [], null, 12).replace(/"/g, '')},\n    terrain: ${this.formatTerrain(level.terrain)}\n}`;
+    }
+
+    private formatPlatforms(platforms: Platform[]): string {
+        return '[\n        ' + platforms.map((platform) => {
+            const typeValue = `PlatformType.${platform.type}`;
+            return `{\n            x: ${platform.x},\n            y: ${platform.y},\n            width: ${platform.width},\n            type: ${typeValue}\n        }`;
+        }).join(',\n        ') + '\n    ]';
     }
 
     private formatTerrain(terrain: TerrainObject[]): string {
@@ -521,5 +462,10 @@ export class LevelEditor {
             const points = t.points.map(p => `{ x: ${p.x}, y: ${p.y} }`).join(', ');
             return `{\n            type: 'polygon',\n            points: [\n                ${points}\n            ]${t.isSolid ? ',\n            isSolid: true' : ''}\n        }`;
         }).join(',\n        ') + '\n    ]';
+    }
+
+    private ensureSingleRolePlatform(type: PlatformType): void {
+        const level = levels[this.game.currentLevelIndex];
+        level.platforms = level.platforms.filter((platform) => platform.type !== type);
     }
 }

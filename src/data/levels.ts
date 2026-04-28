@@ -1,29 +1,30 @@
-import { CargoType, DEFAULT_GRAVITY } from '../constants';
+import { CargoType, DEFAULT_GRAVITY, PlatformType } from '../constants';
 import { Level } from '../types';
 
 export const levels: Level[] = [
     {
         name: "VALLEY OF NEON",
-        gravity: 0.1,
+        gravity: DEFAULT_GRAVITY,
         fuel: 300,
-        shipStart: { "x": 100, "y": 590 },
-        podStart: { x: 660, y: 580, type: CargoType.NEON_CORE },
-        exit: { "x": 390, "y": 470, "radius": 40 },
+        cargoType: CargoType.NEON_CORE,
         platforms: [
             {
                 x: 100,
                 y: 600,
-                width: 80
+                width: 80,
+                type: PlatformType.START
             },
             {
                 x: 660,
                 y: 590,
-                width: 80
+                width: 80,
+                type: PlatformType.CARGO
             },
             {
                 x: 390,
                 y: 470,
-                width: 80
+                width: 80,
+                type: PlatformType.DROP
             }
         ],
         fans: [],
@@ -37,21 +38,27 @@ export const levels: Level[] = [
         ]
     }, {
         name: "THE GAUNTLET",
-        gravity: 0.1,
+        gravity: DEFAULT_GRAVITY,
         fuel: 300,
-        shipStart: { x: 100, y: 340 },
-        podStart: { x: 600, y: 340, type: CargoType.QUANTUM_FUEL },
-        exit: { x: 100, y: 350, radius: 40 },
+        cargoType: CargoType.QUANTUM_FUEL,
         platforms: [
             {
                 x: 100,
                 y: 350,
-                width: 80
+                width: 80,
+                type: PlatformType.START
             },
             {
                 x: 600,
                 y: 350,
-                width: 80
+                width: 80,
+                type: PlatformType.CARGO
+            },
+            {
+                x: 100,
+                y: 350,
+                width: 80,
+                type: PlatformType.DROP
             }
         ],
         fans: [],
@@ -75,13 +82,11 @@ export const levels: Level[] = [
         name: "DEEP DELVE",
         gravity: DEFAULT_GRAVITY,
         fuel: 500,
-        shipStart: { x: 100, y: 190 },
-        podStart: { x: 500, y: 940, type: CargoType.NEON_CORE },
-        exit: { x: 900, y: 190, radius: 40 },
+        cargoType: CargoType.NEON_CORE,
         platforms: [
-            { x: 100, y: 200, width: 80 },
-            { x: 500, y: 950, width: 80 },
-            { x: 900, y: 200, width: 80 }
+            { x: 100, y: 200, width: 80, type: PlatformType.START },
+            { x: 500, y: 950, width: 80, type: PlatformType.CARGO },
+            { x: 900, y: 200, width: 80, type: PlatformType.DROP }
         ],
         terrain: [
             {
@@ -99,12 +104,11 @@ export const levels: Level[] = [
         name: "THE CRUSHER",
         gravity: DEFAULT_GRAVITY,
         fuel: 500,
-        shipStart: { x: 100, y: 180 },
-        podStart: { x: 1400, y: 180, type: CargoType.QUANTUM_FUEL },
-        exit: { x: 100, y: 180, radius: 40 },
+        cargoType: CargoType.QUANTUM_FUEL,
         platforms: [
-            { x: 100, y: 190, width: 80 },
-            { x: 1400, y: 190, width: 80 }
+            { x: 100, y: 190, width: 80, type: PlatformType.START },
+            { x: 1400, y: 190, width: 80, type: PlatformType.CARGO },
+            { x: 100, y: 190, width: 80, type: PlatformType.DROP }
         ],
         terrain: [
             {
@@ -124,13 +128,11 @@ export const levels: Level[] = [
         name: "WIND TUNNEL",
         gravity: DEFAULT_GRAVITY,
         fuel: 500,
-        shipStart: { x: 100, y: 590 },
-        podStart: { x: 800, y: 690, type: CargoType.NEON_CORE },
-        exit: { x: 100, y: 100, radius: 40 },
+        cargoType: CargoType.NEON_CORE,
         platforms: [
-            { x: 100, y: 600, width: 80 },
-            { x: 800, y: 700, width: 80 },
-            { x: 100, y: 100, width: 80 }
+            { x: 100, y: 600, width: 80, type: PlatformType.START },
+            { x: 800, y: 700, width: 80, type: PlatformType.CARGO },
+            { x: 100, y: 100, width: 80, type: PlatformType.DROP }
         ],
         fans: [
             { x: 550, y: 700, width: 50, length: 400, rotation: -Math.PI / 2, speed: 7 }
@@ -151,24 +153,25 @@ export const levels: Level[] = [
         name: "CROSSWINDS",
         gravity: DEFAULT_GRAVITY,
         fuel: 600,
-        shipStart: { "x": 100, "y": 740 },
-        podStart: { "x": 540, "y": 240, "type": CargoType.QUANTUM_FUEL },
-        exit: { "x": 100, "y": 250, "radius": 40 },
+        cargoType: CargoType.QUANTUM_FUEL,
         platforms: [
             {
                 x: 100,
                 y: 750,
-                width: 80
+                width: 80,
+                type: PlatformType.START
             },
             {
                 x: 510,
                 y: 250,
-                width: 80
+                width: 80,
+                type: PlatformType.CARGO
             },
             {
                 x: 100,
                 y: 250,
-                width: 80
+                width: 80,
+                type: PlatformType.DROP
             }
         ],
         fans: [

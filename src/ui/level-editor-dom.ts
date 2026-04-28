@@ -1,3 +1,4 @@
+import { PlatformType } from '../constants';
 import { Fan, Platform, TerrainObject } from '../types';
 
 interface PropertyRowInputConfig {
@@ -10,16 +11,22 @@ interface PropertyRowInputConfig {
     step?: string;
 }
 
+interface PropertyRowSelectConfig {
+    id: string;
+    label: string;
+    value: string;
+    options: Array<{ value: string; label: string }>;
+}
+
 export interface EditorPanelElements {
     panel: HTMLDivElement;
     inspectorSection: HTMLDivElement;
     inspectorContent: HTMLDivElement;
     addPolygonButton: HTMLButtonElement;
-    addPlatformButton: HTMLButtonElement;
+    addStartPlatformButton: HTMLButtonElement;
+    addCargoPlatformButton: HTMLButtonElement;
+    addDropPlatformButton: HTMLButtonElement;
     addFanButton: HTMLButtonElement;
-    addShipButton: HTMLButtonElement;
-    addPodButton: HTMLButtonElement;
-    addExitButton: HTMLButtonElement;
     exportButton: HTMLButtonElement;
     resetCameraButton: HTMLButtonElement;
 }
@@ -84,6 +91,27 @@ function createPropertyRow(config: PropertyRowInputConfig): HTMLDivElement {
     return row;
 }
 
+function createSelectRow(config: PropertyRowSelectConfig): HTMLDivElement {
+    const row = createElement('div', 'prop-row');
+    const label = createElement('label', undefined, config.label);
+    label.setAttribute('for', config.id);
+    row.appendChild(label);
+
+    const select = createElement('select') as HTMLSelectElement;
+    select.id = config.id;
+
+    for (const optionConfig of config.options) {
+        const option = createElement('option') as HTMLOptionElement;
+        option.value = optionConfig.value;
+        option.textContent = optionConfig.label;
+        select.appendChild(option);
+    }
+    select.value = config.value;
+
+    row.appendChild(select);
+    return row;
+}
+
 function createSectionLabel(text: string): HTMLSpanElement {
     return createElement('span', undefined, text);
 }
@@ -106,27 +134,23 @@ export function createEditorPanel(): EditorPanelElements {
     addPolygonButton.id = 'add-poly-btn';
     addPolygonButton.textContent = '+ POLYGON';
 
-    const addPlatformButton = createElement('button') as HTMLButtonElement;
-    addPlatformButton.id = 'add-platform-btn';
-    addPlatformButton.textContent = '+ PLATFORM';
+    const addStartPlatformButton = createElement('button') as HTMLButtonElement;
+    addStartPlatformButton.id = 'add-start-platform-btn';
+    addStartPlatformButton.textContent = '+ START PLATFORM';
+
+    const addCargoPlatformButton = createElement('button') as HTMLButtonElement;
+    addCargoPlatformButton.id = 'add-cargo-platform-btn';
+    addCargoPlatformButton.textContent = '+ CARGO PLATFORM';
+
+    const addDropPlatformButton = createElement('button') as HTMLButtonElement;
+    addDropPlatformButton.id = 'add-drop-platform-btn';
+    addDropPlatformButton.textContent = '+ DROP PLATFORM';
 
     const addFanButton = createElement('button') as HTMLButtonElement;
     addFanButton.id = 'add-fan-btn';
     addFanButton.textContent = '+ FAN';
 
-    const addShipButton = createElement('button') as HTMLButtonElement;
-    addShipButton.id = 'add-ship-btn';
-    addShipButton.textContent = 'SET SHIP';
-
-    const addPodButton = createElement('button') as HTMLButtonElement;
-    addPodButton.id = 'add-pod-btn';
-    addPodButton.textContent = 'SET POD';
-
-    const addExitButton = createElement('button') as HTMLButtonElement;
-    addExitButton.id = 'add-exit-btn';
-    addExitButton.textContent = 'SET EXIT';
-
-    addActions.append(addPolygonButton, addPlatformButton, addFanButton, addShipButton, addPodButton, addExitButton);
+    addActions.append(addPolygonButton, addStartPlatformButton, addCargoPlatformButton, addDropPlatformButton, addFanButton);
     addSection.appendChild(addActions);
     toolsPanel.appendChild(addSection);
 
@@ -171,11 +195,10 @@ export function createEditorPanel(): EditorPanelElements {
         inspectorSection,
         inspectorContent,
         addPolygonButton,
-        addPlatformButton,
+        addStartPlatformButton,
+        addCargoPlatformButton,
+        addDropPlatformButton,
         addFanButton,
-        addShipButton,
-        addPodButton,
-        addExitButton,
         exportButton,
         resetCameraButton
     };
@@ -199,7 +222,17 @@ export function renderFanInspector(content: HTMLDivElement, fan: Fan): void {
 
 export function renderPlatformInspector(content: HTMLDivElement, platform: Platform): void {
     content.replaceChildren(
-        createPropertyRow({ id: 'prop-wid', label: 'Width', type: 'number', value: String(platform.width), step: '10' })
+        createPropertyRow({ id: 'prop-wid', label: 'Width', type: 'number', value: String(platform.width), step: '10' }),
+        createSelectRow({
+            id: 'prop-platform-type',
+            label: 'Role',
+            value: platform.type,
+            options: [
+                { value: PlatformType.START, label: 'Start' },
+                { value: PlatformType.CARGO, label: 'Cargo Lift' },
+                { value: PlatformType.DROP, label: 'Cargo Drop' }
+            ]
+        })
     );
 }
 

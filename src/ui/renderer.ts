@@ -1,6 +1,7 @@
 import { levels } from '../data/levels';
 import {
     GameState,
+    PlatformType,
     STAR_COUNT, STAR_FIELD_SPREAD, STAR_MIN_SIZE, STAR_SIZE_RANGE, STAR_ALPHA, STARFIELD_PARALLAX,
     TERRAIN_LINE_WIDTH,
     SHIP_NOSE_Y, SHIP_WING_X, SHIP_WING_Y, SHIP_THRUST_GLOW_BLUR, SHIP_THRUST_TIP_X, SHIP_THRUST_TIP_Y, SHIP_CARGO_HALF,
@@ -168,9 +169,14 @@ export class Renderer {
     }
 
     private drawPlatforms(level: Level): void {
-        this.ctx.shadowColor = this.colors.platformColor;
-        this.ctx.strokeStyle = this.colors.platformColor;
         level.platforms.forEach(p => {
+            const platformColor = p.type === PlatformType.START
+                ? '#00ff66'
+                : p.type === PlatformType.CARGO
+                    ? '#00aaff'
+                    : '#ff00ff';
+            this.ctx.shadowColor = platformColor;
+            this.ctx.strokeStyle = platformColor;
             this.ctx.beginPath();
             this.ctx.moveTo(p.x - p.width / 2, p.y);
             this.ctx.lineTo(p.x + p.width / 2, p.y);
@@ -276,13 +282,15 @@ export class Renderer {
     }
 
     private drawExit(level: Level): void {
+        const dropPlatform = level.platforms.find((p) => p.type === PlatformType.DROP);
+        if (!dropPlatform) return;
         const color = this.colors.exitPortalColor;
         this.ctx.shadowColor = color;
         this.ctx.strokeStyle = color;
-        this.ctx.strokeRect(level.exit.x - EXIT_HALF_WIDTH, level.exit.y - EXIT_HEIGHT, EXIT_HALF_WIDTH * 2, EXIT_HEIGHT);
+        this.ctx.strokeRect(dropPlatform.x - EXIT_HALF_WIDTH, dropPlatform.y - EXIT_HEIGHT, EXIT_HALF_WIDTH * 2, EXIT_HEIGHT);
         if (this.game.state === GameState.SUCCESS) {
             this.ctx.fillStyle = color;
-            this.ctx.fillRect(level.exit.x - EXIT_HALF_WIDTH, level.exit.y - EXIT_HEIGHT, EXIT_HALF_WIDTH * 2, EXIT_HEIGHT);
+            this.ctx.fillRect(dropPlatform.x - EXIT_HALF_WIDTH, dropPlatform.y - EXIT_HEIGHT, EXIT_HALF_WIDTH * 2, EXIT_HEIGHT);
         }
     }
 
@@ -359,39 +367,18 @@ export class Renderer {
             });
         });
 
-        // 2. Ship Start Handle (Green) - Ship footprint
-        const isShipSelected = selected?.type === 'ship';
-        this.drawBoxHandle(
-            level.shipStart.x, 
-            level.shipStart.y + (SHIP_WING_Y + SHIP_NOSE_Y) / 2,
-            SHIP_WING_X * 2, 
-            SHIP_WING_Y - SHIP_NOSE_Y, 
-            '#00ff00',
-            isShipSelected
-        );
-
-        // 3. Pod Start Handle (Blue) - Pod size
-        const isPodSelected = selected?.type === 'pod';
-        this.drawBoxHandle(level.podStart.x, level.podStart.y, POD_HALF_SIZE * 2, POD_HALF_SIZE * 2, '#00aaff', isPodSelected);
-
-        // 4. Exit Handle (Magenta) - Exit size
-        const isExitSelected = selected?.type === 'exit';
-        this.drawBoxHandle(
-            level.exit.x, 
-            level.exit.y - EXIT_HEIGHT / 2, 
-            EXIT_HALF_WIDTH * 2, 
-            EXIT_HEIGHT, 
-            '#ff00ff',
-            isExitSelected
-        );
-
-        // 5. Platform Handles (Yellow) - Platform width
+        // 2. Platform Handles - role color indicates gameplay semantics
         level.platforms.forEach((p, i) => {
             const isSelected = selected?.type === 'platform' && selected.index === i;
-            this.drawBoxHandle(p.x, p.y, p.width, 4, '#ffff00', isSelected);
+            const handleColor = p.type === PlatformType.START
+                ? '#00ff00'
+                : p.type === PlatformType.CARGO
+                    ? '#00aaff'
+                    : '#ff00ff';
+            this.drawBoxHandle(p.x, p.y, p.width, 4, handleColor, isSelected);
         });
 
-        // 6. Fan Handles (Orange) - Fan size (aligned with rotation)
+        // 3. Fan Handles (Orange) - Fan size (aligned with rotation)
         if (level.fans) {
             level.fans.forEach((f, i) => {
                 const isSelected = selected?.type === 'fan' && selected.index === i;
@@ -495,11 +482,16 @@ export class Renderer {
             this.rctx.fillRect(this.game.pod.x - blip / 2, this.game.pod.y - blip / 2, blip, blip);
         }
 
-        // Exit
+        // Drop platform
+        const dropPlatform = level.platforms.find((p) => p.type === PlatformType.DROP);
+        if (!dropPlatform) {
+            this.rctx.restore();
+            return;
+        }
         const exitBlip = RADAR_EXIT_BLIP_SIZE / targetScale;
         this.rctx.strokeStyle = this.colors.radarExitColor;
         this.rctx.lineWidth = 1 / targetScale;
-        this.rctx.strokeRect(level.exit.x - exitBlip / 2, level.exit.y - exitBlip / 2, exitBlip, exitBlip);
+        this.rctx.strokeRect(dropPlatform.x - exitBlip / 2, dropPlatform.y - exitBlip / 2, exitBlip, exitBlip);
 
         this.rctx.restore();
     }

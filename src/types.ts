@@ -1,4 +1,4 @@
-import { CargoType, GameState } from './constants';
+import { CargoType, GameState, PlatformType } from './constants';
 
 export interface Point {
     x: number;
@@ -7,6 +7,7 @@ export interface Point {
 
 export interface Platform extends Point {
     width: number;
+    type: PlatformType;
 }
 
 export interface Fan extends Point {
@@ -22,9 +23,7 @@ export interface Level {
     name: string;
     gravity: number;
     fuel: number;
-    shipStart: Point;
-    podStart: Point & { type: CargoType };
-    exit: Point & { radius: number };
+    cargoType: CargoType;
     platforms: Platform[];
     fans?: Fan[];
     terrain: TerrainObject[];

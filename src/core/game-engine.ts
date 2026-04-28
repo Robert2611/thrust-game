@@ -5,7 +5,7 @@ import { levels } from '../data/levels';
 import {
     GameState, InputActions,
     DEFAULT_VIRTUAL_WIDTH, DEFAULT_VIRTUAL_HEIGHT,
-    DEFAULT_THRUST_STRENGTH, POD_PICKUP_RADIUS
+    DEFAULT_THRUST_STRENGTH, POD_PICKUP_RADIUS, PlatformType, SHIP_HALF_HEIGHT, POD_HALF_SIZE
 } from '../constants';
 import { ParticleSystem } from './particle-system';
 import { Particle, HUDUpdateCallback, StateChangeCallback, ExplosionCallback } from '../types';
@@ -62,6 +62,8 @@ export class GameEngine {
 
     public resetLevel(): void {
         const level = levels[this.currentLevelIndex];
+        const startPlatform = this.getRequiredPlatform(PlatformType.START);
+        const cargoPlatform = this.getRequiredPlatform(PlatformType.CARGO);
 
         let maxX = DEFAULT_VIRTUAL_WIDTH;
         let maxY = DEFAULT_VIRTUAL_HEIGHT;
@@ -76,8 +78,8 @@ export class GameEngine {
         this.virtualWidth = maxX;
         this.virtualHeight = maxY;
 
-        this.ship.reset(level.shipStart.x, level.shipStart.y, level.fuel);
-        this.pod.reset(level.podStart.x, level.podStart.y, level.podStart.type);
+        this.ship.reset(startPlatform.x, startPlatform.y - SHIP_HALF_HEIGHT, level.fuel);
+        this.pod.reset(cargoPlatform.x, cargoPlatform.y - POD_HALF_SIZE, level.cargoType);
         this.particleSystem.clear();
         
         this.physics.gravity = level.gravity;
@@ -128,8 +130,14 @@ export class GameEngine {
         
         if (this.onHUDUpdate) this.onHUDUpdate();
         
-        const distToExit = Math.sqrt((this.ship.x - level.exit.x)**2 + (this.ship.y - level.exit.y)**2);
-        if (distToExit < level.exit.radius && this.ship.cargo && this.ship.isOnPlatform) {
+        const dropPlatform = this.getRequiredPlatform(PlatformType.DROP);
+        const isOnDropPlatform =
+            this.ship.isOnPlatform &&
+            this.ship.x >= dropPlatform.x - dropPlatform.width / 2 &&
+            this.ship.x <= dropPlatform.x + dropPlatform.width / 2 &&
+            Math.abs(this.ship.y + SHIP_HALF_HEIGHT - dropPlatform.y) <= SHIP_HALF_HEIGHT;
+
+        if (isOnDropPlatform && this.ship.cargo) {
             this.state = GameState.SUCCESS;
             if (this.onStateChange) this.onStateChange(this.state);
         }
@@ -172,5 +180,14 @@ export class GameEngine {
     public nextLevel(): void {
         this.currentLevelIndex = (this.currentLevelIndex + 1) % levels.length;
         this.startLevel();
+    }
+
+    private getRequiredPlatform(type: PlatformType) {
+        const level = levels[this.currentLevelIndex];
+        const platform = level.platforms.find((p) => p.type === type);
+        if (!platform) {
+            throw new Error(`Level "${level.name}" is missing required platform type: ${type}`);
+        }
+        return platform;
     }
 }

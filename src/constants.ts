@@ -15,6 +15,12 @@ export enum CargoType {
     QUANTUM_FUEL = 'QUANTUM FUEL'
 }
 
+export enum PlatformType {
+    START = 'START',
+    CARGO = 'CARGO',
+    DROP = 'DROP'
+}
+
 // --- Physics ---
 export const DEFAULT_GRAVITY = 0.1;
 export const DEFAULT_FRICTION = 0.99;
